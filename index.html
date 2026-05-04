@@ -101,6 +101,10 @@ input[type=number]:focus,input[type=text]:focus,select:focus{border-color:var(--
 .school-Ab{color:#6ab8cc}.school-Co{color:#9a8ecc}.school-Di{color:#a0c878}
 .school-En{color:#cc8ea0}.school-Ev{color:#cc6e4a}.school-Il{color:#8eacc8}
 .school-Ne{color:#7a9e7a}.school-Tr{color:#c8b44a}
+.src-badge{font-size:9px;padding:1px 5px;border-radius:3px;border:1px solid;font-weight:600;flex-shrink:0;letter-spacing:.03em}
+.src-PHB{color:#a09080;border-color:#3a342c}
+.src-XGtE{color:#6ab8cc;border-color:#3a6070}
+.src-TCoE{color:#9a8ecc;border-color:#4a406a}
 
 /* ── DETAIL POPUP ── */
 .spell-detail{display:none;position:fixed;inset:0;z-index:100;align-items:center;justify-content:center;padding:1rem}
@@ -246,6 +250,12 @@ input[type=number]:focus,input[type=text]:focus,select:focus{border-color:var(--
         <option value="noM">Без М-компонента</option>
         <option value="М">Есть М-компонент</option>
       </select>
+      <select id="srcFilter">
+        <option value="">Все источники</option>
+        <option value="PHB">PHB</option>
+        <option value="XGtE">XGtE</option>
+        <option value="TCoE">TCoE</option>
+      </select>
     </div>
     <div class="level-tabs" id="levelTabs"></div>
     <div class="spell-list" id="spellList"></div>
@@ -270,115 +280,212 @@ input[type=number]:focus,input[type=text]:focus,select:focus{border-color:var(--
 // ════════════════════════════════════════════════════════════
 // classes: B=Бард C=Жрец D=Друид P=Паладин R=Следопыт K=Плут W=Волшебник N=Колдун S=Чародей
 const SPELLS = [
-{name:"Волшебная рука",level:0,school:"Co",cast:"1 действие",range:"30 фт",comp:"В,С",conc:false,ritual:false,dur:"1 мин",desc:"Создаёт призрачную руку, которая манипулирует предметами, открывает двери, достаёт вещи из контейнеров. Не может атаковать или применять магические предметы.",classes:["B","W","N"]},
-{name:"Друидизм",level:0,school:"Tr",cast:"1 действие",range:"30 фт",comp:"В,С",conc:false,ritual:false,dur:"Мгновенно",desc:"Небольшие природные эффекты: создать иллюзию природы, ускорить рост растений, предсказать погоду, заставить цветок расцвести.",classes:["D"]},
-{name:"Истинный удар",level:0,school:"Di",cast:"1 действие",range:"30 фт",comp:"С",conc:true,ritual:false,dur:"До конца след. хода",desc:"Вы получаете понимание защиты цели. До конца следующего хода совершаете следующую атаку по цели с преимуществом.",classes:["B","W","N","S","K"]},
-{name:"Кислотные брызги",level:0,school:"Co",cast:"1 действие",range:"60 фт",comp:"В,С",conc:false,ritual:false,dur:"Мгновенно",desc:"Бросаете пузырь кислоты. Испытание Ловкости или 1d6 кислотного урона.",classes:["W","S"]},
-{name:"Клинок зелёного пламени",level:0,school:"Ev",cast:"1 действие",range:"5 фт",comp:"В,М",conc:false,ritual:false,dur:"Мгновенно",desc:"Атака оружием ближнего боя, зелёное пламя перепрыгивает на существо в пределах 5 фт. Второе существо получает урон огнём = модификатору заклинательной хар-ки.",classes:["W","N","S","K"]},
-{name:"Колдовской заряд",level:0,school:"Ev",cast:"1 действие",range:"120 фт",comp:"В,С",conc:false,ritual:false,dur:"Мгновенно",desc:"Дальнобойная атака заклинанием — 1d10 урона силовым полем.",classes:["N"]},
-{name:"Огонь фей",level:0,school:"Ev",cast:"1 действие",range:"60 фт",comp:"В",conc:true,ritual:false,dur:"Концентрация, до 1 мин",desc:"Куб 20 фт. Существа подсвечиваются. Атаки по освещённым существам совершаются с преимуществом.",classes:["B","D"]},
-{name:"Огненный болт",level:0,school:"Ev",cast:"1 действие",range:"120 фт",comp:"В,С",conc:false,ritual:false,dur:"Мгновенно",desc:"Дальнобойная атака заклинанием — 1d10 урона огнём.",classes:["W","S","N"]},
-{name:"Луч мороза",level:0,school:"Ev",cast:"1 действие",range:"60 фт",comp:"В,С",conc:false,ritual:false,dur:"Мгновенно",desc:"Дальнобойная атака заклинанием — 1d8 холодного урона, скорость цели уменьшается на 10 фт.",classes:["W","S","N"]},
-{name:"Мороз",level:0,school:"Ev",cast:"1 действие",range:"Касание",comp:"В,С",conc:false,ritual:false,dur:"Мгновенно",desc:"Испытание Телосложения или 1d6 холодного урона и цель лишается реакции до начала своего следующего хода.",classes:["D","W","S","N"]},
-{name:"Слово боли",level:0,school:"En",cast:"1 действие",range:"60 фт",comp:"В",conc:false,ritual:false,dur:"Мгновенно",desc:"Испытание Телосложения или 1d6 психического урона.",classes:["B","W","N","S","K"]},
-{name:"Терновый хлыст",level:0,school:"Tr",cast:"1 действие",range:"30 фт",comp:"В",conc:false,ritual:false,dur:"Мгновенно",desc:"Атака заклинанием — 1d6 рубящего урона, существо до Большого размера притягивается на 10 фт к вам.",classes:["D"]},
-{name:"Удар грома",level:0,school:"Ev",cast:"1 действие",range:"5 фт",comp:"В",conc:false,ritual:false,dur:"Мгновенно",desc:"Испытание Телосложения: 1d6 звукового урона и отброс на 10 фт. При успехе — половина.",classes:["W","S","N","D"]},
-{name:"Фокус",level:0,school:"Il",cast:"1 действие",range:"30 фт",comp:"В,С",conc:false,ritual:false,dur:"1 час",desc:"Создаёт иллюзорный звук, изображение, запах или иное ощущение.",classes:["B","W","N","S"]},
-{name:"Починка",level:0,school:"Tr",cast:"1 минута",range:"Касание",comp:"В,С,М",conc:false,ritual:false,dur:"Мгновенно",desc:"Чинит один разрыв или разлом в предмете.",classes:["B","C","D","W","S"]},
-{name:"Сакральный огонь",level:0,school:"Ev",cast:"1 действие",range:"60 фт",comp:"В,С",conc:false,ritual:false,dur:"Мгновенно",desc:"Испытание Ловкости или 1d8 урона лучистой энергией. За укрытием не спрятаться.",classes:["C"]},
-{name:"Ядовитые брызги",level:0,school:"Co",cast:"1 действие",range:"10 фт",comp:"В,С",conc:false,ritual:false,dur:"Мгновенно",desc:"Испытание Телосложения или 1d12 урона ядом.",classes:["D","W","S","N"]},
-{name:"Пляска огней",level:0,school:"Ev",cast:"1 действие",range:"60 фт",comp:"В,С,М",conc:true,ritual:false,dur:"Концентрация, до 1 мин",desc:"До четырёх огоньков в пределах 20 фт. Каждый даёт тусклый свет в пределах 10 фт.",classes:["B","W"]},
-{name:"Танцующие огни",level:0,school:"Ev",cast:"1 действие",range:"120 фт",comp:"В,С,М",conc:true,ritual:false,dur:"Концентрация, до 1 мин",desc:"До четырёх факелоподобных огоньков или один призрачный гуманоид.",classes:["B","W","S"]},
-{name:"Посыл послания",level:0,school:"Tr",cast:"1 действие",range:"120 фт",comp:"В,С,М",conc:false,ritual:false,dur:"1 раунд",desc:"Шёпотом передаёте сообщение до 25 слов. Цель слышит и может ответить.",classes:["B","W","S"]},
-{name:"Сопротивление",level:0,school:"Ab",cast:"1 действие",range:"Касание",comp:"В,С,М",conc:true,ritual:false,dur:"Концентрация, до 1 мин",desc:"Цель один раз может прибавить d4 к одному испытанию.",classes:["C","D"]},
-{name:"Руководство",level:0,school:"Di",cast:"1 действие",range:"Касание",comp:"В,С",conc:true,ritual:false,dur:"Концентрация, до 1 мин",desc:"Цель один раз может прибавить d4 к одной проверке характеристики.",classes:["C","D"]},
-{name:"Пронизывающий взор",level:0,school:"Di",cast:"1 действие",range:"30 фт",comp:"В,С",conc:false,ritual:false,dur:"Мгновенно",desc:"Испытание Мудрости или 1d6 психического урона и цель не может использовать реакции.",classes:["B","W","S"]},
-// ══ 1 УРОВЕНЬ ══
-{name:"Благословение",level:1,school:"En",cast:"1 действие",range:"30 фт",comp:"В,С,М",conc:true,ritual:false,dur:"Концентрация, до 1 мин",desc:"До трёх существ прибавляют 1d4 к броскам атаки и испытаниям.",classes:["C","P"]},
-{name:"Волна грома",level:1,school:"Ev",cast:"1 действие",range:"На себя (15-фт куб)",comp:"В,С",conc:false,ritual:false,dur:"Мгновенно",desc:"Испытание Телосложения: 2d8 звукового урона и отброс на 10 фт. При успехе вдвое меньше.",classes:["B","D","W","S"]},
-{name:"Волшебный снаряд",level:1,school:"Ev",cast:"1 действие",range:"120 фт",comp:"В,С",conc:false,ritual:false,dur:"Мгновенно",desc:"Три дротика магической силы автоматически поражают цели — 1d4+1 каждый. На каждый уровень выше +1 дротик.",classes:["W","S","N"]},
-{name:"Лечение ран",level:1,school:"Ev",cast:"1 действие",range:"Касание",comp:"В,С",conc:false,ritual:false,dur:"Мгновенно",desc:"1d8 + мод хитов. На каждый уровень выше +1d8.",classes:["B","C","D","P","R"]},
-{name:"Доспехи мага",level:1,school:"Ab",cast:"1 действие",range:"Касание",comp:"В,С,М",conc:false,ritual:false,dur:"8 часов",desc:"КБ существа без доспехов = 13 + мод Ловкости.",classes:["W","N","S"]},
-{name:"Очаровать человека",level:1,school:"En",cast:"1 действие",range:"30 фт",comp:"В,С",conc:false,ritual:false,dur:"1 час",desc:"Испытание Мудрости или гуманоид очарован и воспринимает вас как хорошего знакомого.",classes:["B","D","W","S","N"]},
-{name:"Опутывание",level:1,school:"Co",cast:"1 действие",range:"90 фт",comp:"В,С",conc:true,ritual:false,dur:"Концентрация, до 1 мин",desc:"Квадрат 20×20 фт. Испытание Силы или существа опутаны.",classes:["D","R"]},
-{name:"Героизм",level:1,school:"En",cast:"1 действие",range:"Касание",comp:"В,С",conc:true,ritual:false,dur:"Концентрация, до 1 мин",desc:"Существо не может быть напугано, получает временные хиты = вашему модификатору.",classes:["B","P"]},
-{name:"Щит",level:1,school:"Ab",cast:"1 реакция",range:"На себя",comp:"В,С",conc:false,ritual:false,dur:"1 раунд",desc:"+5 к КБ до начала следующего хода, включая атаку-триггер. Нет урона от Волшебного снаряда.",classes:["W","S"]},
-{name:"Сон",level:1,school:"En",cast:"1 действие",range:"90 фт",comp:"В,С,М",conc:false,ritual:false,dur:"1 мин",desc:"Бросьте 5d8 — столько хитов существ можно усыпить. На каждый уровень выше +2d8.",classes:["B","W","S"]},
-{name:"Исцеляющее слово",level:1,school:"Ev",cast:"1 бонусное действие",range:"60 фт",comp:"В",conc:false,ritual:false,dur:"Мгновенно",desc:"1d4 + мод хитов. На каждый уровень выше +1d4.",classes:["B","C","D"]},
-{name:"Обнаружение магии",level:1,school:"Di",cast:"1 действие",range:"На себя",comp:"В,С",conc:true,ritual:true,dur:"Концентрация, до 10 мин",desc:"Чувствуете присутствие магии в пределах 30 фт. Видите ауры.",classes:["B","C","D","P","R","W","S","N"]},
-{name:"Опознание",level:1,school:"Di",cast:"1 минута",range:"Касание",comp:"В,С,М",conc:false,ritual:true,dur:"Мгновенно",desc:"Узнаёте свойства магического предмета или заклинания на существе.",classes:["B","W"]},
-{name:"Вызов фамильяра",level:1,school:"Co",cast:"1 час",range:"10 фт",comp:"В,С,М",conc:false,ritual:true,dur:"Мгновенно",desc:"Вызываете фамильяра — духа в форме животного.",classes:["W","N"]},
-{name:"Длительный шаг",level:1,school:"Tr",cast:"1 бонусное действие",range:"На себя",comp:"В",conc:false,ritual:false,dur:"1 раунд",desc:"Скорость удваивается в этом ходу.",classes:["B","D","R","W","S","N"]},
-{name:"Цвет брызг",level:1,school:"Il",cast:"1 действие",range:"На себя (15-фт конус)",comp:"В,С,М",conc:false,ritual:false,dur:"1 раунд",desc:"Существа с суммарными хитами до 6 ослепляются до конца следующего хода.",classes:["W","S"]},
-{name:"Гром небесный",level:1,school:"Ev",cast:"1 реакция",range:"На себя",comp:"В",conc:false,ritual:false,dur:"Мгновенно",desc:"Атакующий в пределах 5 фт получает 2d8 урона молнией. На каждый уровень выше +1d8.",classes:["S","N"]},
-{name:"Хаотические брызги",level:1,school:"Ev",cast:"1 бонусное действие",range:"На себя",comp:"В",conc:true,ritual:false,dur:"Концентрация, до 1 мин",desc:"+1d6 случайного урона к следующей атаке.",classes:["S","N"]},
-{name:"Слово повеления",level:1,school:"En",cast:"1 действие",range:"60 фт",comp:"В",conc:false,ritual:false,dur:"1 раунд",desc:"Одно слово-команда гуманоиду. Испытание Мудрости или выполняет.",classes:["C","P"]},
-{name:"Стремительный отход",level:1,school:"Tr",cast:"1 бонусное действие",range:"На себя",comp:"В,С",conc:false,ritual:false,dur:"10 минут",desc:"Рывок можно совершать бонусным действием на каждом ходу.",classes:["N","K","D","R"]},
-{name:"Знак против зла",level:1,school:"Ab",cast:"1 действие",range:"Касание",comp:"В,С",conc:true,ritual:false,dur:"Концентрация, до 10 мин",desc:"Преимущество к испытаниям против заклинаний существ противоположного мировоззрения.",classes:["C","D","P","R","W"]},
-{name:"Понимание языков",level:1,school:"Di",cast:"1 действие",range:"На себя",comp:"В,С,М",conc:false,ritual:true,dur:"1 час",desc:"Понимаете любой разговорный язык и любой письменный.",classes:["B","W","N","S"]},
-{name:"Безмолвный образ",level:1,school:"Il",cast:"1 действие",range:"60 фт",comp:"В,С,М",conc:true,ritual:false,dur:"Концентрация, до 10 мин",desc:"Образ объекта не крупнее куба 15 фт. Бонусным действием перемещаете.",classes:["B","W","S"]},
-{name:"Охота ведьм",level:1,school:"Di",cast:"1 бонусное действие",range:"На себя",comp:"В,С",conc:true,ritual:false,dur:"Концентрация, до 1 часа",desc:"+1d6 урона оружием по отмеченной добыче. Чувствуете её местонахождение.",classes:["R"]},
-// ══ 2 УРОВЕНЬ ══
-{name:"Туманный шаг",level:2,school:"Co",cast:"1 бонусное действие",range:"На себя",comp:"В",conc:false,ritual:false,dur:"Мгновенно",desc:"Телепортируетесь в незанятое место в пределах 30 фт.",classes:["W","S","N"]},
-{name:"Незримость",level:2,school:"Il",cast:"1 действие",range:"Касание",comp:"В,С,М",conc:true,ritual:false,dur:"Концентрация, до 1 часа",desc:"Существо невидимо до конца заклинания или пока не атакует и не читает заклинание.",classes:["B","W","S","N","K"]},
-{name:"Тьма",level:2,school:"Ev",cast:"1 действие",range:"60 фт",comp:"В,М",conc:true,ritual:false,dur:"Концентрация, до 10 мин",desc:"Магическая тьма радиусом 15 фт. Непроницаема для тёмного зрения.",classes:["W","N","S"]},
-{name:"Паутина",level:2,school:"Co",cast:"1 действие",range:"60 фт",comp:"В,С,М",conc:true,ritual:false,dur:"Концентрация, до 1 часа",desc:"Куб 20 фт густой паутины. Испытание Ловкости или опутан.",classes:["W","S"]},
-{name:"Удержание личности",level:2,school:"En",cast:"1 действие",range:"60 фт",comp:"В,С,М",conc:true,ritual:false,dur:"Концентрация, до 1 мин",desc:"Испытание Мудрости или гуманоид парализован.",classes:["B","W","S","N","C"]},
-{name:"Зеркальный образ",level:2,school:"Il",cast:"1 действие",range:"На себя",comp:"В,С",conc:false,ritual:false,dur:"1 мин",desc:"Три иллюзорных двойника. При попадании бросок d20 определяет, попал ли в копию.",classes:["B","W","S","N"]},
-{name:"Духовное оружие",level:2,school:"Ev",cast:"1 бонусное действие",range:"60 фт",comp:"В,С",conc:false,ritual:false,dur:"1 мин",desc:"Призрачное оружие. Бонусным действием переместить и атаковать снова.",classes:["C","P"]},
-{name:"Менее восстановление",level:2,school:"Di",cast:"1 действие",range:"Касание",comp:"В,С",conc:false,ritual:false,dur:"Мгновенно",desc:"Заканчиваете одну болезнь или одно состояние: глухота, слепота, паралич, отравление.",classes:["B","C","D","P","R"]},
-{name:"Стрела кислоты",level:2,school:"Ev",cast:"1 действие",range:"90 фт",comp:"В,С,М",conc:false,ritual:false,dur:"1 раунд",desc:"4d4 кислотного урона. При попадании цель покрывается кислотой: +2d4 в конце следующего хода.",classes:["W","S"]},
-{name:"Пылающая сфера",level:2,school:"Co",cast:"1 действие",range:"60 фт",comp:"В,С,М",conc:true,ritual:false,dur:"Концентрация, до 1 мин",desc:"Пылающий шар 5 фт. Испытание Ловкости или 2d6 огня. Бонусным действием катите.",classes:["D","W","S"]},
-{name:"Тишина",level:2,school:"Il",cast:"1 действие",range:"120 фт",comp:"В,С",conc:true,ritual:true,dur:"Концентрация, до 10 мин",desc:"Сфера 20 фт без звука. Нельзя читать заклинания с вербальным компонентом.",classes:["B","C","R"]},
-{name:"Шаг тени",level:2,school:"Co",cast:"1 бонусное действие",range:"На себя",comp:"В",conc:false,ritual:false,dur:"Мгновенно",desc:"В тусклом свете или темноте телепортируетесь на 120 фт в тусклый свет или тьму.",classes:["N","K"]},
-{name:"Облако кинжалов",level:2,school:"Co",cast:"1 действие",range:"60 фт",comp:"В,С,М",conc:true,ritual:false,dur:"Концентрация, до 1 мин",desc:"Куб 5 фт летающих кинжалов. Испытание Ловкости или 4d4 рубящего.",classes:["B","N","K","W"]},
-{name:"Доброе благополучие",level:2,school:"En",cast:"1 действие",range:"30 фт",comp:"В,С",conc:false,ritual:false,dur:"8 часов",desc:"Преимущество к испытаниям Мудрости. Иммунитет к испугу.",classes:["B","C","D","P","R"]},
-{name:"Невидимость высшая",level:4,school:"Il",cast:"1 действие",range:"Касание",comp:"В,С",conc:true,ritual:false,dur:"Концентрация, до 1 мин",desc:"Существо невидимо, даже когда атакует или читает заклинания.",classes:["B","W","S","N"]},
-// ══ 3 УРОВЕНЬ ══
-{name:"Огненный шар",level:3,school:"Ev",cast:"1 действие",range:"150 фт",comp:"В,С,М",conc:false,ritual:false,dur:"Мгновенно",desc:"Сфера 20 фт. Испытание Ловкости: 8d6 огня при провале, вдвое меньше при успехе. На уровень выше +1d6.",classes:["W","S","N"]},
-{name:"Молния",level:3,school:"Ev",cast:"1 действие",range:"На себя (100-фт линия)",comp:"В,С,М",conc:false,ritual:false,dur:"Мгновенно",desc:"Линия 100×5 фт. 8d6 молнии. Испытание Ловкости на половину. На уровень выше +1d6.",classes:["W","S","N"]},
-{name:"Контрзаклинание",level:3,school:"Ab",cast:"1 реакция",range:"60 фт",comp:"С",conc:false,ritual:false,dur:"Мгновенно",desc:"Прерываете заклинание ≤3 уровня автоматически. Выше — проверка (СЛ 10 + уровень).",classes:["W","S","N"]},
-{name:"Рассеивание магии",level:3,school:"Ab",cast:"1 действие",range:"120 фт",comp:"В,С",conc:false,ritual:false,dur:"Мгновенно",desc:"Заклинания ≤3 уровня на цели заканчиваются. Для выше — проверка (СЛ 10 + уровень).",classes:["B","C","D","W","S","N","P","R"]},
-{name:"Полёт",level:3,school:"Tr",cast:"1 действие",range:"Касание",comp:"В,С,М",conc:true,ritual:false,dur:"Концентрация, до 10 мин",desc:"Скорость полёта 60 фт. На уровень выше +1 существо.",classes:["W","S","N"]},
-{name:"Гипнотический узор",level:3,school:"Il",cast:"1 действие",range:"120 фт",comp:"С,М",conc:true,ritual:false,dur:"Концентрация, до 1 мин",desc:"Куб 30 фт. Испытание Мудрости или очарованы и недееспособны.",classes:["B","W","S","N"]},
-{name:"Духовный страж",level:3,school:"Co",cast:"1 бонусное действие",range:"На себя (15 фт)",comp:"В,С,М",conc:true,ritual:false,dur:"Концентрация, до 10 мин",desc:"Духи в радиусе 15 фт. 3d8 урона (испытание Мудрости на половину). Скорость врагов вдвое меньше.",classes:["C"]},
-{name:"Ускорение",level:3,school:"Tr",cast:"1 действие",range:"30 фт",comp:"В,С,М",conc:true,ritual:false,dur:"Концентрация, до 1 мин",desc:"Скорость цели удваивается, +2 к КБ, преимущество к испытаниям Ловкости, дополнительное действие атаки.",classes:["W","S"]},
-{name:"Замедление",level:3,school:"Tr",cast:"1 действие",range:"120 фт",comp:"В,С,М",conc:true,ritual:false,dur:"Концентрация, до 1 мин",desc:"До шести существ. Испытание Мудрости или замедляются: половина скорости, −2 к КБ и испытаниям Ловкости.",classes:["W","S"]},
-{name:"Страх",level:3,school:"Il",cast:"1 действие",range:"На себя (30-фт конус)",comp:"В,С,М",conc:true,ritual:false,dur:"Концентрация, до 1 мин",desc:"Испытание Мудрости или напуганы и спасаются бегством.",classes:["B","W","S","N"]},
-{name:"Шатёр Леомунда",level:3,school:"Co",cast:"1 минута",range:"20 фт",comp:"В,С,М",conc:false,ritual:true,dur:"8 часов",desc:"Купол с комфортной температурой и защитой от непогоды.",classes:["B","W"]},
-{name:"Анимация мертвецов",level:3,school:"Ne",cast:"1 минута",range:"10 фт",comp:"В,С,М",conc:false,ritual:false,dur:"Мгновенно",desc:"Скелет или зомби из костей/трупа гуманоида. Подчиняются 24 часа. На уровень выше +2 нежити.",classes:["C","W","N"]},
-{name:"Кажущийся мёртвым",level:3,school:"Ne",cast:"1 действие",range:"Касание",comp:"В,С,М",conc:false,ritual:true,dur:"1 час",desc:"Выглядите мёртвым для любого осмотра.",classes:["B","C","W","N","K"]},
-{name:"Дневной свет",level:3,school:"Ev",cast:"1 действие",range:"60 фт",comp:"В,С",conc:false,ritual:false,dur:"1 час",desc:"Сфера яркого света радиусом 60 фт, тусклый ещё 60 фт.",classes:["C","D","P","R","S"]},
-{name:"Вызов удара",level:3,school:"Ev",cast:"1 действие",range:"На себя",comp:"В",conc:true,ritual:false,dur:"Концентрация, до 1 мин",desc:"Следующая атака оружием: +3d8 молнии, цель не использует реакции.",classes:["P"]},
-// ══ 4 УРОВЕНЬ ══
-{name:"Страж веры",level:4,school:"Co",cast:"1 действие",range:"30 фт",comp:"В",conc:false,ritual:false,dur:"8 часов",desc:"Призрачный страж. Враги в пределах 10 фт получают 20 урона лучистой энергией.",classes:["C"]},
-{name:"Огненный щит",level:4,school:"Ev",cast:"1 действие",range:"На себя",comp:"В,С,М",conc:false,ritual:false,dur:"10 минут",desc:"Тёплый (2d8 огня при атаке, сопротивление холоду) или холодный (2d8 холода, сопротивление огню) щит.",classes:["W","S"]},
-{name:"Изгнание",level:4,school:"Ab",cast:"1 действие",range:"60 фт",comp:"В,С,М",conc:true,ritual:false,dur:"Концентрация, до 1 мин",desc:"Испытание Харизмы или существо изгнано. Нативный план — временно. Чужой — навсегда.",classes:["C","P","W","N","S"]},
-{name:"Ледяной шторм",level:4,school:"Ev",cast:"1 действие",range:"300 фт",comp:"В,С,М",conc:false,ritual:false,dur:"1 раунд",desc:"Цилиндр 20×40 фт. 2d8 дробящего и 4d6 холодного. Испытание Ловкости на половину.",classes:["D","W","S","N"]},
-{name:"Огненная стена",level:4,school:"Ev",cast:"1 действие",range:"120 фт",comp:"В,С,М",conc:true,ritual:false,dur:"Концентрация, до 1 мин",desc:"Стена огня до 60 фт. Пройти — 5d8 огня. Испытание Ловкости на половину.",classes:["D","W","S"]},
-{name:"Полиморф",level:4,school:"Tr",cast:"1 действие",range:"60 фт",comp:"В,С,М",conc:true,ritual:false,dur:"Концентрация, до 1 часа",desc:"Превращаете существо в зверя. Испытание Мудрости при провале.",classes:["B","D","W","S"]},
-{name:"Нистулово волшебное жилище",level:4,school:"Co",cast:"1 минута",range:"300 фт",comp:"В,С,М",conc:false,ritual:true,dur:"24 часа",desc:"Невидимый дверной проём в межпространственное жилище до 8 существ.",classes:["W","B"]},
-{name:"Воздушная стена",level:4,school:"Ev",cast:"1 действие",range:"120 фт",comp:"В,С,М",conc:true,ritual:false,dur:"Концентрация, до 1 мин",desc:"Стена ветра 60×15 фт. Мелкие летящие существа не проходят. Снаряды с помехой.",classes:["D","W","S"]},
-// ══ 5 УРОВЕНЬ ══
-{name:"Телекинез",level:5,school:"Tr",cast:"1 действие",range:"60 фт",comp:"В,С",conc:true,ritual:false,dur:"Концентрация, до 10 мин",desc:"Перемещаете предметы и существ силой мысли.",classes:["W","S","N"]},
-{name:"Конус холода",level:5,school:"Ev",cast:"1 действие",range:"На себя (60-фт конус)",comp:"В,С,М",conc:false,ritual:false,dur:"Мгновенно",desc:"8d8 холодного. Испытание Телосложения на половину. Убитые — ледяные статуи.",classes:["W","S","N"]},
-{name:"Воскрешение",level:5,school:"Ne",cast:"1 час",range:"Касание",comp:"В,С,М",conc:false,ritual:false,dur:"Мгновенно",desc:"Возвращаете умершего не более 100 лет назад.",classes:["B","C","P","D"]},
-{name:"Облако смерти",level:5,school:"Ne",cast:"1 действие",range:"150 фт",comp:"В,С",conc:true,ritual:false,dur:"Концентрация, до 10 мин",desc:"Сфера 20 фт. 5d8 яда. Испытание Телосложения на половину. Повторяется каждый ход.",classes:["D","W","N","S"]},
-{name:"Телепатическая связь Рары",level:5,school:"Di",cast:"1 действие",range:"30 фт",comp:"В,С,М",conc:false,ritual:true,dur:"1 час",desc:"Телепатическая связь до 8 существ.",classes:["W"]},
-{name:"Масса лечения",level:5,school:"Ev",cast:"1 действие",range:"60 фт",comp:"В,С",conc:false,ritual:false,dur:"Мгновенно",desc:"До шести существ в пределах 30 фт восстанавливают 3d8 + мод хитов.",classes:["B","C","D"]},
-// ══ 6–9 УРОВЕНЬ ══
-{name:"Слово возврата",level:6,school:"Co",cast:"1 действие",range:"На себя",comp:"В,М",conc:false,ritual:false,dur:"Мгновенно",desc:"Вы и до 5 существ телепортируетесь в заранее освящённое место.",classes:["C","D"]},
-{name:"Огненный смерч",level:7,school:"Co",cast:"1 действие",range:"300 фт",comp:"В,С,М",conc:true,ritual:false,dur:"Концентрация, до 1 мин",desc:"Цилиндр 10×60 фт. 10d6 огня. Испытание Ловкости на половину.",classes:["D","S"]},
-{name:"Смерть пальцем",level:7,school:"Ne",cast:"1 действие",range:"60 фт",comp:"В,С",conc:false,ritual:false,dur:"Мгновенно",desc:"7d8+30 некротического. Испытание Телосложения на половину. Убитый гуманоид встаёт зомби.",classes:["W","N","S"]},
-{name:"Телепортация",level:7,school:"Co",cast:"1 действие",range:"10 фт",comp:"В",conc:false,ritual:false,dur:"Мгновенно",desc:"Вы и до 8 существ телепортируетесь к месту назначения.",classes:["B","W","S"]},
-{name:"Настоящее перевоплощение",level:7,school:"Tr",cast:"10 минут",range:"Касание",comp:"В,С,М",conc:false,ritual:false,dur:"10 дней",desc:"Умершее существо воссоздаётся в случайном гуманоидном теле.",classes:["D"]},
-{name:"Слово силы: оглушить",level:8,school:"En",cast:"1 действие",range:"60 фт",comp:"В",conc:false,ritual:false,dur:"Мгновенно",desc:"Если у цели ≤150 хитов — она оглушена.",classes:["B","W","S","N"]},
-{name:"Солнечный свет",level:8,school:"Ev",cast:"1 действие",range:"150 фт",comp:"В,С,М",conc:true,ritual:false,dur:"Концентрация, до 1 мин",desc:"Цилиндр 60×80 фт яркого света. 12d6 лучистого. Нежить с помехой.",classes:["C","D"]},
-{name:"Желание",level:9,school:"Co",cast:"1 действие",range:"На себя",comp:"В",conc:false,ritual:false,dur:"Мгновенно",desc:"Наиболее мощное заклинание. Дублирует любое заклинание ≤8 уровня или переписывает реальность.",classes:["W","S"]},
-{name:"Истинное воскрешение",level:9,school:"Ne",cast:"1 час",range:"Касание",comp:"В,С,М",conc:false,ritual:false,dur:"Мгновенно",desc:"Восстанавливает умершего ≤200 лет назад из любого состояния.",classes:["C","D"]},
-{name:"Гейт",level:9,school:"Co",cast:"1 действие",range:"60 фт",comp:"В,С,М",conc:true,ritual:false,dur:"Концентрация, до 1 мин",desc:"Создаёт портал в другой план. Называете существо — оно притягивается.",classes:["C","W","S"]},
-{name:"Временная остановка",level:9,school:"Tr",cast:"1 действие",range:"На себя",comp:"В",conc:false,ritual:false,dur:"1d4+1 хода",desc:"Останавливаете время для всех, кроме себя.",classes:["W","S"]},
-{name:"Предсказание",level:9,school:"Di",cast:"1 минута",range:"На себя",comp:"В,С,М",conc:false,ritual:true,dur:"Мгновенно",desc:"Преимущество к броскам атаки, проверкам и испытаниям на 8 часов.",classes:["C"]},
+// ══ ЗАГОВОРЫ (Cantrips) ══
+// ── PHB ──
+{name:"Волшебная рука [Mage Hand]",level:0,school:"Co",src:"PHB",cast:"1 действие",range:"30 фт",comp:"В,С",conc:false,ritual:false,dur:"1 мин",desc:"Создаёт призрачную руку, которая манипулирует предметами, открывает двери, достаёт вещи из контейнеров. Не может атаковать или применять магические предметы.",classes:["B","W","N"]},
+{name:"Друидизм [Druidcraft]",level:0,school:"Tr",src:"PHB",cast:"1 действие",range:"30 фт",comp:"В,С",conc:false,ritual:false,dur:"Мгновенно",desc:"Небольшие природные эффекты: создать иллюзию природы, ускорить рост растений, предсказать погоду, заставить цветок расцвести.",classes:["D"]},
+{name:"Истинный удар [True Strike]",level:0,school:"Di",src:"PHB",cast:"1 действие",range:"30 фт",comp:"С",conc:true,ritual:false,dur:"До конца след. хода",desc:"Вы получаете понимание защиты цели. До конца следующего хода совершаете следующую атаку по цели с преимуществом.",classes:["B","W","N","S","K"]},
+{name:"Кислотные брызги [Acid Splash]",level:0,school:"Co",src:"PHB",cast:"1 действие",range:"60 фт",comp:"В,С",conc:false,ritual:false,dur:"Мгновенно",desc:"Бросаете пузырь кислоты в одно существо или двух существ в пределах 5 фт друг от друга. Испытание Ловкости или 1d6 кислотного урона.",classes:["W","S"]},
+{name:"Клинок зелёного пламени [Green-Flame Blade]",level:0,school:"Ev",src:"PHB",cast:"1 действие",range:"5 фт",comp:"В,М",conc:false,ritual:false,dur:"Мгновенно",desc:"Атака оружием ближнего боя, зелёное пламя перепрыгивает на существо в пределах 5 фт. Второе существо получает урон огнём = модификатору заклинательной хар-ки.",classes:["W","N","S","K"]},
+{name:"Колдовской заряд [Eldritch Blast]",level:0,school:"Ev",src:"PHB",cast:"1 действие",range:"120 фт",comp:"В,С",conc:false,ritual:false,dur:"Мгновенно",desc:"Дальнобойная атака заклинанием — 1d10 урона силовым полем. На 5-м, 11-м и 17-м уровнях +1 луч.",classes:["N"]},
+{name:"Огонь фей [Faerie Fire]",level:0,school:"Ev",src:"PHB",cast:"1 действие",range:"60 фт",comp:"В",conc:true,ritual:false,dur:"Концентрация, до 1 мин",desc:"Куб 20 фт. Существа подсвечиваются. Атаки по освещённым существам совершаются с преимуществом.",classes:["B","D"]},
+{name:"Огненный болт [Fire Bolt]",level:0,school:"Ev",src:"PHB",cast:"1 действие",range:"120 фт",comp:"В,С",conc:false,ritual:false,dur:"Мгновенно",desc:"Дальнобойная атака заклинанием — 1d10 урона огнём. Горючие предметы воспламеняются. Усиление: +1d10 на 5-м, 11-м и 17-м уровнях.",classes:["W","S","N"]},
+{name:"Луч мороза [Ray of Frost]",level:0,school:"Ev",src:"PHB",cast:"1 действие",range:"60 фт",comp:"В,С",conc:false,ritual:false,dur:"Мгновенно",desc:"Дальнобойная атака заклинанием — 1d8 холодного урона, скорость цели уменьшается на 10 фт. Усиление: +1d8 на 5-м, 11-м и 17-м уровнях.",classes:["W","S","N"]},
+{name:"Мороз [Frostbite]",level:0,school:"Ev",src:"PHB",cast:"1 действие",range:"Касание",comp:"В,С",conc:false,ritual:false,dur:"Мгновенно",desc:"Испытание Телосложения или 1d6 холодного урона и цель лишается реакции до начала своего следующего хода.",classes:["D","W","S","N"]},
+{name:"Слово боли [Vicious Mockery]",level:0,school:"En",src:"PHB",cast:"1 действие",range:"60 фт",comp:"В",conc:false,ritual:false,dur:"Мгновенно",desc:"Испытание Телосложения или 1d4 психического урона и помеха к следующему броску атаки. Усиление: +1d4 на 5-м, 11-м и 17-м уровнях.",classes:["B"]},
+{name:"Терновый хлыст [Thorn Whip]",level:0,school:"Tr",src:"PHB",cast:"1 действие",range:"30 фт",comp:"В",conc:false,ritual:false,dur:"Мгновенно",desc:"Атака заклинанием — 1d6 рубящего урона, существо до Большого размера притягивается на 10 фт к вам. Усиление: +1d6 на 5-м, 11-м и 17-м уровнях.",classes:["D"]},
+{name:"Удар грома [Thunderclap]",level:0,school:"Ev",src:"PHB",cast:"1 действие",range:"5 фт",comp:"С",conc:false,ritual:false,dur:"Мгновенно",desc:"Испытание Телосложения: 1d6 звукового урона и отброс на 10 фт. При успехе — половина. Слышно на 100 фт.",classes:["B","D","W","S","N"]},
+{name:"Фокус [Prestidigitation]",level:0,school:"Tr",src:"PHB",cast:"1 действие",range:"10 фт",comp:"В,С",conc:false,ritual:false,dur:"До 1 часа",desc:"Создаёт иллюзорный звук, изображение, запах или иное ощущение, не наносящее вреда.",classes:["B","W","N","S"]},
+{name:"Починка [Mending]",level:0,school:"Tr",src:"PHB",cast:"1 минута",range:"Касание",comp:"В,С,М",conc:false,ritual:false,dur:"Мгновенно",desc:"Чинит один разрыв или разлом в предмете.",classes:["B","C","D","W","S"]},
+{name:"Сакральный огонь [Sacred Flame]",level:0,school:"Ev",src:"PHB",cast:"1 действие",range:"60 фт",comp:"В,С",conc:false,ritual:false,dur:"Мгновенно",desc:"Испытание Ловкости или 1d8 урона лучистой энергией. За укрытием не спрятаться. Усиление: +1d8 на 5-м, 11-м и 17-м уровнях.",classes:["C"]},
+{name:"Ядовитые брызги [Poison Spray]",level:0,school:"Co",src:"PHB",cast:"1 действие",range:"10 фт",comp:"В,С",conc:false,ritual:false,dur:"Мгновенно",desc:"Испытание Телосложения или 1d12 урона ядом. Усиление: +1d12 на 5-м, 11-м и 17-м уровнях.",classes:["D","W","S","N"]},
+{name:"Пляска огней [Dancing Lights]",level:0,school:"Ev",src:"PHB",cast:"1 действие",range:"120 фт",comp:"В,С,М",conc:true,ritual:false,dur:"Концентрация, до 1 мин",desc:"До четырёх факелоподобных огоньков или один призрачный гуманоид. Бонусным действием перемещаете на 60 фт.",classes:["B","W","S"]},
+{name:"Посыл послания [Message]",level:0,school:"Tr",src:"PHB",cast:"1 действие",range:"120 фт",comp:"В,С,М",conc:false,ritual:false,dur:"1 раунд",desc:"Шёпотом передаёте сообщение до 25 слов. Цель слышит и может ответить.",classes:["B","W","S"]},
+{name:"Сопротивление [Resistance]",level:0,school:"Ab",src:"PHB",cast:"1 действие",range:"Касание",comp:"В,С,М",conc:true,ritual:false,dur:"Концентрация, до 1 мин",desc:"Цель один раз может прибавить d4 к одному испытанию.",classes:["C","D"]},
+{name:"Руководство [Guidance]",level:0,school:"Di",src:"PHB",cast:"1 действие",range:"Касание",comp:"В,С",conc:true,ritual:false,dur:"Концентрация, до 1 мин",desc:"Цель один раз может прибавить d4 к одной проверке характеристики.",classes:["C","D"]},
+{name:"Пронизывающий взор [Mind Sliver]",level:0,school:"En",src:"PHB",cast:"1 действие",range:"60 фт",comp:"В",conc:false,ritual:false,dur:"Мгновенно",desc:"Испытание Интеллекта или 1d6 психического урона; цель вычитает 1d4 из следующего испытания.",classes:["W","S","N"]},
+{name:"Гробовой огонь [Toll the Dead]",level:0,school:"Ne",src:"PHB",cast:"1 действие",range:"60 фт",comp:"В,С",conc:false,ritual:false,dur:"Мгновенно",desc:"Испытание Мудрости или 1d8 некротического урона (1d12 если у цели не хватает хитов). Усиление: +1 кость на 5-м, 11-м и 17-м уровнях.",classes:["C","W","N"]},
+{name:"Слово магии [Word of Radiance]",level:0,school:"Ev",src:"PHB",cast:"1 действие",range:"5 фт",comp:"В,М",conc:false,ritual:false,dur:"Мгновенно",desc:"Все видимые враги в пределах 5 фт: испытание Телосложения или 1d6 лучистого урона.",classes:["C"]},
+{name:"Искра [Firebolt]",level:0,school:"Ev",src:"PHB",cast:"1 действие",range:"120 фт",comp:"В,С",conc:false,ritual:false,dur:"Мгновенно",desc:"Дальнобойная атака заклинанием — 1d10 урона огнём.",classes:["W","S"]},
+{name:"Клинок грома [Booming Blade]",level:0,school:"Ev",src:"PHB",cast:"1 действие",range:"5 фт",comp:"В,М",conc:false,ritual:false,dur:"1 раунд",desc:"Атака оружием; при попадании — нормальный урон + при движении до начала следующего хода +1d8 звукового урона.",classes:["W","N","S","K"]},
+// ── XGtE ──
+{name:"Контроль пламени [Control Flames]",level:0,school:"Tr",src:"XGtE",cast:"1 действие",range:"60 фт",comp:"С",conc:false,ritual:false,dur:"До 1 часа",desc:"Контролируете немагическое пламя: двигаете, увеличиваете/уменьшаете, меняете цвет или придаёте форму.",classes:["D","W","S"]},
+{name:"Создание огня [Create Bonfire]",level:0,school:"Co",src:"XGtE",cast:"1 действие",range:"60 фт",comp:"В,С",conc:true,ritual:false,dur:"Концентрация, до 1 мин",desc:"Создаёте огонь в пространстве 5×5 фт. Существо, заходящее в огонь или начинающее ход там: испытание Ловкости или 1d8 огня.",classes:["D","W","S","N"]},
+{name:"Гримуар [Magic Stone]",level:0,school:"Tr",src:"XGtE",cast:"1 бонусное действие",range:"Касание",comp:"В,С",conc:false,ritual:false,dur:"1 мин",desc:"Зачаровываете до 3 камней. Атака ими — 1d6+мод Мудрости или Харизмы дробящего урона.",classes:["D","N"]},
+{name:"Удар молнии [Lightning Lure]",level:0,school:"Ev",src:"XGtE",cast:"1 действие",range:"15 фт",comp:"В",conc:false,ritual:false,dur:"Мгновенно",desc:"Притягиваете существо на 10 фт к себе. Если оно оказывается в пределах 5 фт — 1d8 молнии (испытание Силы на отмену).",classes:["W","N","S","K"]},
+{name:"Пронизывающий взор [Infestation]",level:0,school:"Co",src:"XGtE",cast:"1 действие",range:"30 фт",comp:"В,С,М",conc:false,ritual:false,dur:"Мгновенно",desc:"Испытание Телосложения или 1d6 яда; цель перемещается в случайном направлении на 5 фт.",classes:["D","W","S","N"]},
+{name:"Шип [Primal Savagery]",level:0,school:"Tr",src:"XGtE",cast:"1 действие",range:"На себя",comp:"С",conc:false,ritual:false,dur:"Мгновенно",desc:"Атака заклинанием ближнего боя: когти/зубы — 1d10 кислотного урона. Усиление: +1d10 на 5-м, 11-м и 17-м уровнях.",classes:["D"]},
+{name:"Форма воды [Shape Water]",level:0,school:"Tr",src:"XGtE",cast:"1 действие",range:"30 фт",comp:"С",conc:false,ritual:false,dur:"До 1 часа",desc:"Контролируете воду в кубе 5 фт: двигаете, замораживаете, меняете цвет или придаёте форму.",classes:["D","W","S"]},
+{name:"Земляной нож [Earthen Grasp]",level:0,school:"Tr",src:"XGtE",cast:"1 действие",range:"30 фт",comp:"В,С",conc:false,ritual:false,dur:"Мгновенно",desc:"Рука из земли хватает существо. Испытание Силы или 1d6 дробящего урона и скорость 0 до начала вашего следующего хода.",classes:["D","W","S"]},
+// ── TCoE ──
+{name:"Взрыв разума [Mind Sliver]",level:0,school:"En",src:"TCoE",cast:"1 действие",range:"60 фт",comp:"В",conc:false,ritual:false,dur:"Мгновенно",desc:"Испытание Интеллекта или 1d6 психического урона и −1d4 к следующему испытанию.",classes:["W","S","N"]},
+{name:"Кислотная струя [Acid Stream]",level:0,school:"Co",src:"TCoE",cast:"1 действие",range:"30 фт",comp:"В,С",conc:false,ritual:false,dur:"Мгновенно",desc:"Дальнобойная атака заклинанием — 1d6 кислотного урона и −2 к КБ цели до начала вашего следующего хода.",classes:["W","S"]},
+// ══ 1 УРОВЕНЬ (1st Level) ══
+// ── PHB ──
+{name:"Благословение [Bless]",level:1,school:"En",src:"PHB",cast:"1 действие",range:"30 фт",comp:"В,С,М",conc:true,ritual:false,dur:"Концентрация, до 1 мин",desc:"До трёх существ прибавляют 1d4 к броскам атаки и испытаниям. На каждый уровень выше +1 существо.",classes:["C","P"]},
+{name:"Волна грома [Thunderwave]",level:1,school:"Ev",src:"PHB",cast:"1 действие",range:"На себя (15-фт куб)",comp:"В,С",conc:false,ritual:false,dur:"Мгновенно",desc:"Испытание Телосложения: 2d8 звукового урона и отброс на 10 фт. При успехе вдвое меньше. На уровень выше +1d8.",classes:["B","D","W","S"]},
+{name:"Волшебный снаряд [Magic Missile]",level:1,school:"Ev",src:"PHB",cast:"1 действие",range:"120 фт",comp:"В,С",conc:false,ritual:false,dur:"Мгновенно",desc:"Три дротика магической силы автоматически поражают цели — 1d4+1 силовым полем каждый. На каждый уровень выше +1 дротик.",classes:["W","S","N"]},
+{name:"Лечение ран [Cure Wounds]",level:1,school:"Ev",src:"PHB",cast:"1 действие",range:"Касание",comp:"В,С",conc:false,ritual:false,dur:"Мгновенно",desc:"1d8 + мод хитов. На каждый уровень выше +1d8.",classes:["B","C","D","P","R"]},
+{name:"Доспехи мага [Mage Armor]",level:1,school:"Ab",src:"PHB",cast:"1 действие",range:"Касание",comp:"В,С,М",conc:false,ritual:false,dur:"8 часов",desc:"КБ существа без доспехов = 13 + мод Ловкости.",classes:["W","N","S"]},
+{name:"Очаровать человека [Charm Person]",level:1,school:"En",src:"PHB",cast:"1 действие",range:"30 фт",comp:"В,С",conc:false,ritual:false,dur:"1 час",desc:"Испытание Мудрости (с преимуществом если сражаетесь). При провале — гуманоид очарован, воспринимает вас как хорошего знакомого.",classes:["B","D","W","S","N"]},
+{name:"Опутывание [Entangle]",level:1,school:"Co",src:"PHB",cast:"1 действие",range:"90 фт",comp:"В,С",conc:true,ritual:false,dur:"Концентрация, до 1 мин",desc:"Квадрат 20×20 фт. Испытание Силы или существа опутаны.",classes:["D","R"]},
+{name:"Героизм [Heroism]",level:1,school:"En",src:"PHB",cast:"1 действие",range:"Касание",comp:"В,С",conc:true,ritual:false,dur:"Концентрация, до 1 мин",desc:"Существо не может быть напугано, получает временные хиты = вашему модификатору в начале каждого хода. На уровень выше +1 существо.",classes:["B","P"]},
+{name:"Щит [Shield]",level:1,school:"Ab",src:"PHB",cast:"1 реакция",range:"На себя",comp:"В,С",conc:false,ritual:false,dur:"1 раунд",desc:"+5 к КБ до начала следующего хода, включая атаку-триггер. Нет урона от Волшебного снаряда.",classes:["W","S"]},
+{name:"Сон [Sleep]",level:1,school:"En",src:"PHB",cast:"1 действие",range:"90 фт",comp:"В,С,М",conc:false,ritual:false,dur:"1 мин",desc:"Бросьте 5d8 — столько хитов существ можно усыпить, начиная с наименьшего. На уровень выше +2d8.",classes:["B","W","S"]},
+{name:"Исцеляющее слово [Healing Word]",level:1,school:"Ev",src:"PHB",cast:"1 бонусное действие",range:"60 фт",comp:"В",conc:false,ritual:false,dur:"Мгновенно",desc:"1d4 + мод хитов. На каждый уровень выше +1d4.",classes:["B","C","D"]},
+{name:"Обнаружение магии [Detect Magic]",level:1,school:"Di",src:"PHB",cast:"1 действие",range:"На себя",comp:"В,С",conc:true,ritual:true,dur:"Концентрация, до 10 мин",desc:"Чувствуете присутствие магии в пределах 30 фт. Видите ауры.",classes:["B","C","D","P","R","W","S","N"]},
+{name:"Опознание [Identify]",level:1,school:"Di",src:"PHB",cast:"1 минута",range:"Касание",comp:"В,С,М",conc:false,ritual:true,dur:"Мгновенно",desc:"Узнаёте свойства магического предмета или заклинания на существе.",classes:["B","W"]},
+{name:"Вызов фамильяра [Find Familiar]",level:1,school:"Co",src:"PHB",cast:"1 час",range:"10 фт",comp:"В,С,М",conc:false,ritual:true,dur:"Мгновенно",desc:"Вызываете фамильяра — духа в форме животного. Телепатические команды. Можете читать заклинания через него.",classes:["W","N"]},
+{name:"Длительный шаг [Longstrider]",level:1,school:"Tr",src:"PHB",cast:"1 бонусное действие",range:"Касание",comp:"В,С,М",conc:false,ritual:false,dur:"1 час",desc:"Скорость цели увеличивается на 10 фт. На уровень выше +1 существо.",classes:["B","D","R","W","S"]},
+{name:"Цвет брызг [Color Spray]",level:1,school:"Il",src:"PHB",cast:"1 действие",range:"На себя (15-фт конус)",comp:"В,С,М",conc:false,ritual:false,dur:"1 раунд",desc:"Существа с суммарными хитами до 6 ослепляются до конца следующего хода. На уровень выше +2d10 хитов.",classes:["W","S"]},
+{name:"Слово повеления [Command]",level:1,school:"En",src:"PHB",cast:"1 действие",range:"60 фт",comp:"В",conc:false,ritual:false,dur:"1 раунд",desc:"Одно слово-команда гуманоиду. Испытание Мудрости или выполняет. На уровень выше +1 существо.",classes:["C","P"]},
+{name:"Стремительный отход [Expeditious Retreat]",level:1,school:"Tr",src:"PHB",cast:"1 бонусное действие",range:"На себя",comp:"В,С",conc:true,ritual:false,dur:"Концентрация, до 10 мин",desc:"Рывок можно совершать бонусным действием на каждом ходу заклинания.",classes:["N","K","D","R","W"]},
+{name:"Знак против зла [Protection from Evil and Good]",level:1,school:"Ab",src:"PHB",cast:"1 действие",range:"Касание",comp:"В,С,М",conc:true,ritual:false,dur:"Концентрация, до 10 мин",desc:"Защита от аберраций, исчадий, нежити, фей, небожителей и элементалей: помеха на атаки, иммунитет к очарованию/испугу.",classes:["C","D","P","R","W"]},
+{name:"Понимание языков [Comprehend Languages]",level:1,school:"Di",src:"PHB",cast:"1 действие",range:"На себя",comp:"В,С,М",conc:false,ritual:true,dur:"1 час",desc:"Понимаете любой разговорный язык и любой письменный.",classes:["B","W","N","S"]},
+{name:"Безмолвный образ [Silent Image]",level:1,school:"Il",src:"PHB",cast:"1 действие",range:"60 фт",comp:"В,С,М",conc:true,ritual:false,dur:"Концентрация, до 10 мин",desc:"Образ объекта не крупнее куба 15 фт. Бонусным действием перемещаете.",classes:["B","W","S"]},
+{name:"Охота ведьм [Hunter's Mark]",level:1,school:"Di",src:"PHB",cast:"1 бонусное действие",range:"90 фт",comp:"В",conc:true,ritual:false,dur:"Концентрация, до 1 часа",desc:"+1d6 урона оружием по отмеченной добыче. Чувствуете местонахождение. На уровень выше — дольше.",classes:["R"]},
+{name:"Укус ведьмы [Hex]",level:1,school:"En",src:"PHB",cast:"1 бонусное действие",range:"90 фт",comp:"В,С,М",conc:true,ritual:false,dur:"Концентрация, до 1 часа",desc:"+1d6 некротического при атаке отмеченной цели. Цель с помехой к выбранной характеристике.",classes:["N"]},
+{name:"Ужас [Cause Fear]",level:1,school:"Ne",src:"PHB",cast:"1 действие",range:"60 фт",comp:"В",conc:true,ritual:false,dur:"Концентрация, до 1 мин",desc:"Испытание Мудрости или существо напугано. В конце каждого хода повторяет испытание.",classes:["W","N"]},
+{name:"Волшебная стрела [Guiding Bolt]",level:1,school:"Ev",src:"PHB",cast:"1 действие",range:"120 фт",comp:"В,С",conc:false,ritual:false,dur:"1 раунд",desc:"Дальнобойная атака заклинанием: 4d6 лучистого урона. Следующая атака по цели — с преимуществом. На уровень выше +1d6.",classes:["C"]},
+{name:"Укрытие от добра и зла [Sanctuary]",level:1,school:"Ab",src:"PHB",cast:"1 бонусное действие",range:"30 фт",comp:"В,С,М",conc:false,ritual:false,dur:"1 мин",desc:"Атакующие цель существа проходят испытание Мудрости. При провале — должны выбрать другую цель.",classes:["C","P"]},
+{name:"Щит веры [Shield of Faith]",level:1,school:"Ab",src:"PHB",cast:"1 бонусное действие",range:"60 фт",comp:"В,С,М",conc:true,ritual:false,dur:"Концентрация, до 10 мин",desc:"+2 к КБ цели.",classes:["C","P"]},
+{name:"Смазка [Grease]",level:1,school:"Co",src:"PHB",cast:"1 действие",range:"60 фт",comp:"В,С,М",conc:false,ritual:false,dur:"1 мин",desc:"Квадрат 10×10 фт смазки. Испытание Ловкости или упасть. Трудная местность.",classes:["W"]},
+{name:"Тревога [Alarm]",level:1,school:"Ab",src:"PHB",cast:"1 минута",range:"30 фт",comp:"В,С,М",conc:false,ritual:true,dur:"8 часов",desc:"Охраняете область 20×20 фт. Тревога при вторжении: мысленно (будит вас) или вслух.",classes:["R","W"]},
+{name:"Туман [Fog Cloud]",level:1,school:"Co",src:"PHB",cast:"1 действие",range:"120 фт",comp:"В,С",conc:true,ritual:false,dur:"Концентрация, до 1 часа",desc:"Сфера тумана радиусом 20 фт — сильно затруднённая видимость.",classes:["B","D","R","W","S"]},
+{name:"Прыжок [Jump]",level:1,school:"Tr",src:"PHB",cast:"1 действие",range:"Касание",comp:"В,С,М",conc:false,ritual:false,dur:"1 мин",desc:"Дальность прыжка цели утраивается.",classes:["D","R","W","S"]},
+{name:"Животный дружище [Animal Friendship]",level:1,school:"En",src:"PHB",cast:"1 действие",range:"30 фт",comp:"В,С,М",conc:false,ritual:false,dur:"24 часа",desc:"Испытание Мудрости или зверь с Интеллектом ≤3 очарован на 24 часа.",classes:["B","D","R"]},
+{name:"Говорить с животными [Speak with Animals]",level:1,school:"Di",src:"PHB",cast:"1 действие",range:"На себя",comp:"В,С",conc:false,ritual:true,dur:"10 мин",desc:"Вы можете понимать и говорить со зверями.",classes:["B","D","R"]},
+// ── XGtE ──
+{name:"Абсорбирование стихий [Absorb Elements]",level:1,school:"Ab",src:"XGtE",cast:"1 реакция",range:"На себя",comp:"С",conc:false,ritual:false,dur:"1 раунд",desc:"Поглощаете входящий урон кислотой, холодом, огнём, молнией или звуком. Сопротивление на 1 раунд. Следующая атака ближнего боя: +1d6 этого типа урона.",classes:["D","R","W","S"]},
+{name:"Связка из кремня [Catapult]",level:1,school:"Tr",src:"XGtE",cast:"1 действие",range:"60 фт",comp:"С",conc:false,ritual:false,dur:"Мгновенно",desc:"Предмет весом 1–5 фунтов летит в цель — 3d8 дробящего. Испытание Ловкости на половину. На уровень выше +1d8.",classes:["D","W","S"]},
+{name:"Ледяной нож [Ice Knife]",level:1,school:"Co",src:"XGtE",cast:"1 действие",range:"60 фт",comp:"С,М",conc:false,ritual:false,dur:"Мгновенно",desc:"Атака дальнобойным заклинанием — 1d10 пронзающего. При попадании взрывается: существа в пределах 5 фт — испытание Ловкости или 2d6 холода. На уровень выше +1d6.",classes:["D","W","S"]},
+{name:"Снаряд ведьмы [Witch Bolt]",level:1,school:"Ev",src:"XGtE",cast:"1 действие",range:"30 фт",comp:"В,С,М",conc:true,ritual:false,dur:"Концентрация, до 1 мин",desc:"Атака дальнобойным заклинанием — 1d12 молнии. Каждый ход бонусным действием: ещё 1d12. На уровень выше +1d12.",classes:["W","N","S"]},
+{name:"Сфера тьмы [Earth Tremor]",level:1,school:"Ev",src:"XGtE",cast:"1 действие",range:"10 фт",comp:"В,С",conc:false,ritual:false,dur:"Мгновенно",desc:"Испытание Ловкости или 1d6 дробящего урона и упасть; земля становится трудной местностью. На уровень выше +1d6.",classes:["B","D","W","S"]},
+// ── TCoE ──
+{name:"Меч духа [Silvery Barbs]",level:1,school:"En",src:"TCoE",cast:"1 реакция",range:"60 фт",comp:"В",conc:false,ritual:false,dur:"Мгновенно",desc:"Когда видимое существо преуспевает с броском атаки, испытанием или проверкой: перебросить и взять меньший результат. Существо на ваш выбор с преимуществом к следующему броску.",classes:["B","W","S"]},
+{name:"Щупальца [Tasha's Caustic Brew]",level:1,school:"Ev",src:"TCoE",cast:"1 действие",range:"На себя (30-фт линия)",comp:"В,С,М",conc:true,ritual:false,dur:"Концентрация, до 1 мин",desc:"Линия кислоты 30×5 фт. Испытание Ловкости или облито кислотой: 2d4 кислотного в начале каждого хода. На уровень выше +2d4.",classes:["W","S"]},
+// ══ 2 УРОВЕНЬ (2nd Level) ══
+// ── PHB ──
+{name:"Туманный шаг [Misty Step]",level:2,school:"Co",src:"PHB",cast:"1 бонусное действие",range:"На себя",comp:"В",conc:false,ritual:false,dur:"Мгновенно",desc:"Телепортируетесь в незанятое видимое место в пределах 30 фт.",classes:["W","S","N","P"]},
+{name:"Незримость [Invisibility]",level:2,school:"Il",src:"PHB",cast:"1 действие",range:"Касание",comp:"В,С,М",conc:true,ritual:false,dur:"Концентрация, до 1 часа",desc:"Существо невидимо до конца заклинания или пока не атакует и не читает заклинание. На уровень выше +1 существо.",classes:["B","W","S","N","K"]},
+{name:"Тьма [Darkness]",level:2,school:"Ev",src:"PHB",cast:"1 действие",range:"60 фт",comp:"В,М",conc:true,ritual:false,dur:"Концентрация, до 10 мин",desc:"Магическая тьма радиусом 15 фт. Непроницаема для тёмного зрения.",classes:["W","N","S"]},
+{name:"Паутина [Web]",level:2,school:"Co",src:"PHB",cast:"1 действие",range:"60 фт",comp:"В,С,М",conc:true,ritual:false,dur:"Концентрация, до 1 часа",desc:"Куб 20 фт густой паутины. Испытание Ловкости или опутан. Горючая.",classes:["W","S"]},
+{name:"Удержание личности [Hold Person]",level:2,school:"En",src:"PHB",cast:"1 действие",range:"60 фт",comp:"В,С,М",conc:true,ritual:false,dur:"Концентрация, до 1 мин",desc:"Испытание Мудрости или гуманоид парализован. В конце каждого хода повторяет. На уровень выше +1 существо.",classes:["B","C","D","W","S","N"]},
+{name:"Зеркальный образ [Mirror Image]",level:2,school:"Il",src:"PHB",cast:"1 действие",range:"На себя",comp:"В,С",conc:false,ritual:false,dur:"1 мин",desc:"Три иллюзорных двойника. При попадании бросок d20 определяет, попал ли в копию (КБ 10 + мод Ловкости).",classes:["B","W","S","N"]},
+{name:"Духовное оружие [Spiritual Weapon]",level:2,school:"Ev",src:"PHB",cast:"1 бонусное действие",range:"60 фт",comp:"В,С",conc:false,ritual:false,dur:"1 мин",desc:"Призрачное оружие: бросок атаки + мод. Бонусным действием перемещаете и атакуете снова. На уровень выше +1d8.",classes:["C","P"]},
+{name:"Менее восстановление [Lesser Restoration]",level:2,school:"Ab",src:"PHB",cast:"1 действие",range:"Касание",comp:"В,С",conc:false,ritual:false,dur:"Мгновенно",desc:"Заканчиваете одну болезнь или одно состояние: глухота, слепота, паралич, отравление.",classes:["B","C","D","P","R"]},
+{name:"Стрела кислоты Мельфа [Melf's Acid Arrow]",level:2,school:"Ev",src:"PHB",cast:"1 действие",range:"90 фт",comp:"В,С,М",conc:false,ritual:false,dur:"1 раунд",desc:"Атака дальнобойным заклинанием — 4d4 кислотного. Промах — 2d4. В конце следующего хода цели ещё 4d4 (промах: 2d4). На уровень выше +1d4.",classes:["W","S"]},
+{name:"Пылающая сфера [Flaming Sphere]",level:2,school:"Co",src:"PHB",cast:"1 действие",range:"60 фт",comp:"В,С,М",conc:true,ritual:false,dur:"Концентрация, до 1 мин",desc:"Пылающий шар 5 фт, 2d6 огня (испытание Ловкости). Бонусным действием катите. На уровень выше +1d6.",classes:["D","W","S"]},
+{name:"Тишина [Silence]",level:2,school:"Il",src:"PHB",cast:"1 действие",range:"120 фт",comp:"В,С",conc:true,ritual:true,dur:"Концентрация, до 10 мин",desc:"Сфера 20 фт без звука. Нельзя слышать и читать заклинания с В-компонентом.",classes:["B","C","R"]},
+{name:"Шаг тени [Misty Step]",level:2,school:"Co",src:"PHB",cast:"1 бонусное действие",range:"На себя",comp:"В",conc:false,ritual:false,dur:"Мгновенно",desc:"В тусклом свете или темноте телепортируетесь на 120 фт в тусклый свет или тьму.",classes:["N","K"]},
+{name:"Облако кинжалов [Cloud of Daggers]",level:2,school:"Co",src:"PHB",cast:"1 действие",range:"60 фт",comp:"В,С,М",conc:true,ritual:false,dur:"Концентрация, до 1 мин",desc:"Куб 5 фт летающих кинжалов. Испытание Ловкости или 4d4 рубящего. На уровень выше +2d4.",classes:["B","N","K","W"]},
+{name:"Благополучие [Aid]",level:2,school:"Ab",src:"PHB",cast:"1 действие",range:"30 фт",comp:"В,С,М",conc:false,ritual:false,dur:"8 часов",desc:"До трёх существ — макс. хиты и текущие хиты +5. На уровень выше +5.",classes:["C","P","R"]},
+{name:"Удар сокрушения [Shatter]",level:2,school:"Ev",src:"PHB",cast:"1 действие",range:"60 фт",comp:"В,С,М",conc:false,ritual:false,dur:"Мгновенно",desc:"Сфера 10 фт. Испытание Телосложения: 3d8 звукового при провале, вдвое меньше при успехе. Неорганика с помехой. На уровень выше +1d8.",classes:["B","W","S","N"]},
+{name:"Прорицание [Augury]",level:2,school:"Di",src:"PHB",cast:"1 минута",range:"На себя",comp:"В,С,М",conc:false,ritual:true,dur:"Мгновенно",desc:"Ваш бог говорит: Благо, Горе, Благо и горе, или Ничего — для конкретного действия в ближайшие 30 мин.",classes:["C"]},
+{name:"Невидимость высшая [Greater Invisibility]",level:4,school:"Il",src:"PHB",cast:"1 действие",range:"Касание",comp:"В,С",conc:true,ritual:false,dur:"Концентрация, до 1 мин",desc:"Существо невидимо, даже когда атакует или читает заклинания.",classes:["B","W","S","N"]},
+{name:"Луч слабости [Ray of Enfeeblement]",level:2,school:"Ne",src:"PHB",cast:"1 действие",range:"60 фт",comp:"В,С",conc:true,ritual:false,dur:"Концентрация, до 1 мин",desc:"Атака дальнобойным заклинанием. При попадании цель наносит вдвое меньше урона атаками на основе Силы.",classes:["W","N"]},
+// ── XGtE ──
+{name:"Aura of Vitality [Aura of Vitality]",level:3,school:"Ev",src:"XGtE",cast:"1 действие",range:"На себя (30 фт)",comp:"В",conc:true,ritual:false,dur:"Концентрация, до 1 мин",desc:"Аура 30 фт. Бонусным действием существо в ауре восстанавливает 2d6 хитов.",classes:["P"]},
+{name:"Волна огня [Aganazzar's Scorcher]",level:2,school:"Ev",src:"XGtE",cast:"1 действие",range:"30 фт",comp:"В,С,М",conc:false,ritual:false,dur:"Мгновенно",desc:"Линия огня 30×5 фт. Испытание Ловкости: 3d8 огня при провале, вдвое меньше при успехе. На уровень выше +1d8.",classes:["W","S"]},
+{name:"Взрывной снаряд [Erupting Earth]",level:3,school:"Tr",src:"XGtE",cast:"1 действие",range:"120 фт",comp:"В,С,М",conc:false,ritual:false,dur:"Мгновенно",desc:"Куб 20 фт. Испытание Телосложения: 3d12 дробящего при провале, половина при успехе. Становится трудной местностью. На уровень выше +1d12.",classes:["D","W","S"]},
+{name:"Пут льда [Snilloc's Snowball Swarm]",level:2,school:"Ev",src:"XGtE",cast:"1 действие",range:"90 фт",comp:"В,С,М",conc:false,ritual:false,dur:"Мгновенно",desc:"Сфера 5 фт. Испытание Ловкости: 3d6 холодного при провале, вдвое меньше при успехе. На уровень выше +2d6.",classes:["W","S"]},
+{name:"Ловушка духа [Summon Lesser Demons]",level:3,school:"Co",src:"XGtE",cast:"1 действие",range:"60 фт",comp:"В,С,М",conc:true,ritual:false,dur:"Концентрация, до 1 часа",desc:"Призываете 2d4 беса/квазита или 2d4 тени, или 1d4 гнолла — они атакуют всех вокруг.",classes:["W","N"]},
+{name:"Удар ударника [Tidal Wave]",level:3,school:"Co",src:"XGtE",cast:"1 действие",range:"120 фт",comp:"В,С,М",conc:false,ritual:false,dur:"Мгновенно",desc:"Волна воды 30×10×10 фт. Испытание Силы: 4d8 дробящего + сбит с ног при провале.",classes:["D","W","S"]},
+// ── TCoE ──
+{name:"Свежевание [Tasha's Mind Whip]",level:2,school:"En",src:"TCoE",cast:"1 действие",range:"90 фт",comp:"В",conc:false,ritual:false,dur:"1 раунд",desc:"Испытание Интеллекта: 3d6 психического урона и может использовать только действие или бонусное действие (не оба). На уровень выше +1 существо.",classes:["W","S"]},
+{name:"Духовный клинок [Spirit Shroud]",level:3,school:"Ne",src:"TCoE",cast:"1 бонусное действие",range:"На себя",comp:"В,С",conc:true,ritual:false,dur:"Концентрация, до 1 мин",desc:"Духи в пределах 10 фт замедляют врагов. +1d8 к урону атаками (тип: некротический, лучистый или холодный). На уровень выше +1d8.",classes:["C","P","W","N"]},
+{name:"Призыв небожителя [Summon Celestial]",level:5,school:"Co",src:"TCoE",cast:"1 действие",range:"90 фт",comp:"В,С,М",conc:true,ritual:false,dur:"Концентрация, до 1 часа",desc:"Призываете небесного духа — форму Мстителя или Защитника. КД равен уровню заклинания.",classes:["C","P"]},
+// ══ 3 УРОВЕНЬ (3rd Level) ══
+// ── PHB ──
+{name:"Огненный шар [Fireball]",level:3,school:"Ev",src:"PHB",cast:"1 действие",range:"150 фт",comp:"В,С,М",conc:false,ritual:false,dur:"Мгновенно",desc:"Сфера 20 фт. Испытание Ловкости: 8d6 огня при провале, вдвое меньше при успехе. На уровень выше +1d6.",classes:["W","S","N"]},
+{name:"Молния [Lightning Bolt]",level:3,school:"Ev",src:"PHB",cast:"1 действие",range:"На себя (100-фт линия)",comp:"В,С,М",conc:false,ritual:false,dur:"Мгновенно",desc:"Линия 100×5 фт. 8d6 молнии. Испытание Ловкости на половину. На уровень выше +1d6.",classes:["W","S","N"]},
+{name:"Контрзаклинание [Counterspell]",level:3,school:"Ab",src:"PHB",cast:"1 реакция",range:"60 фт",comp:"С",conc:false,ritual:false,dur:"Мгновенно",desc:"Прерываете заклинание ≤3 уровня автоматически. Выше — проверка заклинательной хар-ки (СЛ 10 + уровень).",classes:["W","S","N"]},
+{name:"Рассеивание магии [Dispel Magic]",level:3,school:"Ab",src:"PHB",cast:"1 действие",range:"120 фт",comp:"В,С",conc:false,ritual:false,dur:"Мгновенно",desc:"Заклинания ≤3 уровня на цели заканчиваются. Для выше — проверка (СЛ 10 + уровень заклинания).",classes:["B","C","D","W","S","N","P","R"]},
+{name:"Полёт [Fly]",level:3,school:"Tr",src:"PHB",cast:"1 действие",range:"Касание",comp:"В,С,М",conc:true,ritual:false,dur:"Концентрация, до 10 мин",desc:"Скорость полёта 60 фт. На уровень выше +1 существо.",classes:["W","S","N"]},
+{name:"Гипнотический узор [Hypnotic Pattern]",level:3,school:"Il",src:"PHB",cast:"1 действие",range:"120 фт",comp:"С,М",conc:true,ritual:false,dur:"Концентрация, до 1 мин",desc:"Куб 30 фт. Испытание Мудрости или очарованы и недееспособны.",classes:["B","W","S","N"]},
+{name:"Духовный страж [Spirit Guardians]",level:3,school:"Co",src:"PHB",cast:"1 бонусное действие",range:"На себя (15 фт)",comp:"В,С,М",conc:true,ritual:false,dur:"Концентрация, до 10 мин",desc:"Духи в радиусе 15 фт. 3d8 урона (испытание Мудрости на половину). Скорость врагов вдвое меньше. На уровень выше +1d8.",classes:["C"]},
+{name:"Ускорение [Haste]",level:3,school:"Tr",src:"PHB",cast:"1 действие",range:"30 фт",comp:"В,С,М",conc:true,ritual:false,dur:"Концентрация, до 1 мин",desc:"Скорость удваивается, +2 к КБ, преимущество к испытаниям Ловкости, дополнительное действие атаки.",classes:["W","S"]},
+{name:"Замедление [Slow]",level:3,school:"Tr",src:"PHB",cast:"1 действие",range:"120 фт",comp:"В,С,М",conc:true,ritual:false,dur:"Концентрация, до 1 мин",desc:"До шести существ. Испытание Мудрости или замедляются: половина скорости, −2 к КБ и испытаниям Ловкости.",classes:["W","S"]},
+{name:"Страх [Fear]",level:3,school:"Il",src:"PHB",cast:"1 действие",range:"На себя (30-фт конус)",comp:"В,С,М",conc:true,ritual:false,dur:"Концентрация, до 1 мин",desc:"Испытание Мудрости или напуганы и спасаются бегством.",classes:["B","W","S","N"]},
+{name:"Шатёр Леомунда [Leomund's Tiny Hut]",level:3,school:"Ev",src:"PHB",cast:"1 минута",range:"На себя (10 фт)",comp:"В,С,М",conc:false,ritual:true,dur:"8 часов",desc:"Купол 10 фт радиусом: комфортная температура, защита от непогоды, до 9 существ.",classes:["B","W"]},
+{name:"Анимация мертвецов [Animate Dead]",level:3,school:"Ne",src:"PHB",cast:"1 минута",range:"10 фт",comp:"В,С,М",conc:false,ritual:false,dur:"Мгновенно",desc:"Скелет или зомби из костей/трупа гуманоида. Подчиняются 24 часа. На уровень выше +2 нежити.",classes:["C","W","N"]},
+{name:"Кажущийся мёртвым [Feign Death]",level:3,school:"Ne",src:"PHB",cast:"1 действие",range:"Касание",comp:"В,С,М",conc:false,ritual:true,dur:"1 час",desc:"Существо выглядит мёртвым для осмотра и заклинаний.",classes:["B","C","D","W","N"]},
+{name:"Дневной свет [Daylight]",level:3,school:"Ev",src:"PHB",cast:"1 действие",range:"60 фт",comp:"В,С",conc:false,ritual:false,dur:"1 час",desc:"Сфера яркого света радиусом 60 фт, тусклый ещё 60 фт.",classes:["C","D","P","R","S"]},
+{name:"Вызов удара [Lightning Arrow]",level:3,school:"Tr",src:"PHB",cast:"1 действие",range:"На себя",comp:"В,С",conc:true,ritual:false,dur:"Концентрация, до 1 мин",desc:"Следующая атака стрелой: 4d8 молнии вместо обычного урона. Существа в 10 фт — 2d8 молнии (испытание Ловкости на половину).",classes:["R"]},
+{name:"Вызов удара [Call Lightning]",level:3,school:"Co",src:"PHB",cast:"1 действие",range:"120 фт",comp:"В,С",conc:true,ritual:false,dur:"Концентрация, до 10 мин",desc:"Облако радиусом 60 фт. Бонусным действием — молния на точку под облаком: 3d10 молнии (испытание Ловкости на половину). На уровень выше +1d10.",classes:["D"]},
+{name:"Удар ветра [Wind Wall]",level:3,school:"Ev",src:"PHB",cast:"1 действие",range:"120 фт",comp:"В,С,М",conc:true,ritual:false,dur:"Концентрация, до 1 мин",desc:"Стена ветра 50×15×1 фт. Мелкие существа не проходят. Снаряды с помехой. 3d8 дробящего (испытание Силы).",classes:["D","R"]},
+{name:"Водный вихрь [Sleet Storm]",level:3,school:"Co",src:"PHB",cast:"1 действие",range:"150 фт",comp:"В,С,М",conc:true,ritual:false,dur:"Концентрация, до 1 мин",desc:"Цилиндр 40×20 фт. Трудная местность. Испытание Ловкости или упасть. Концентрация с помехой.",classes:["D","W","S"]},
+// ── XGtE ──
+{name:"Взрывная земля [Erupting Earth]",level:3,school:"Tr",src:"XGtE",cast:"1 действие",range:"120 фт",comp:"В,С,М",conc:false,ritual:false,dur:"Мгновенно",desc:"Куб 20 фт. Испытание Телосложения: 3d12 дробящего при провале, половина при успехе. Трудная местность. На уровень выше +1d12.",classes:["D","W","S"]},
+{name:"Огненные стрелы [Flame Arrows]",level:3,school:"Tr",src:"XGtE",cast:"1 действие",range:"Касание",comp:"В,С",conc:true,ritual:false,dur:"Концентрация, до 1 часа",desc:"До 12 стрел/болтов в колчане зачарованы. Каждая наносит дополнительно 1d6 огня при попадании.",classes:["D","R","W","S"]},
+{name:"Замерзание [Wall of Water]",level:3,school:"Ev",src:"XGtE",cast:"1 действие",range:"60 фт",comp:"В,С,М",conc:true,ritual:false,dur:"Концентрация, до 10 мин",desc:"Стена воды 30×10×1 фт. Трудная местность для прохождения. Огненные заклинания с помехой.",classes:["D","W","S"]},
+// ── TCoE ──
+{name:"Интеллект Азута [Intellect Fortress]",level:3,school:"Ab",src:"TCoE",cast:"1 действие",range:"30 фт",comp:"В",conc:true,ritual:false,dur:"Концентрация, до 1 часа",desc:"Цель получает сопротивление к психическому урону и преимущество к испытаниям Интеллекта, Мудрости и Харизмы.",classes:["B","W","S","N"]},
+{name:"Призыв феи [Summon Fey]",level:3,school:"Co",src:"TCoE",cast:"1 действие",range:"90 фт",comp:"В,С,М",conc:true,ritual:false,dur:"Концентрация, до 1 часа",desc:"Призываете духа феи (форма Веселья, Злобы или Любопытства). Уровень духа = уровень заклинания.",classes:["B","D","W","N","R"]},
+{name:"Призыв нечисти [Summon Undead]",level:3,school:"Ne",src:"TCoE",cast:"1 действие",range:"90 фт",comp:"В,С,М",conc:true,ritual:false,dur:"Концентрация, до 1 часа",desc:"Призываете нежить (Плоть, Кости или Тень). Уровень духа = уровень заклинания.",classes:["W","N"]},
+// ══ 4 УРОВЕНЬ (4th Level) ══
+// ── PHB ──
+{name:"Страж веры [Guardian of Faith]",level:4,school:"Co",src:"PHB",cast:"1 действие",range:"30 фт",comp:"В",conc:false,ritual:false,dur:"8 часов",desc:"Призрачный страж. Враги в пределах 10 фт: 20 урона лучистой энергией (испытание Ловкости на половину). Всего 60 урона.",classes:["C"]},
+{name:"Огненный щит [Fire Shield]",level:4,school:"Ev",src:"PHB",cast:"1 действие",range:"На себя",comp:"В,С,М",conc:false,ritual:false,dur:"10 минут",desc:"Тёплый (сопр. холоду, 2d8 огня атакующим ближнего боя) или холодный (сопр. огню, 2d8 холода) щит.",classes:["W","S"]},
+{name:"Изгнание [Banishment]",level:4,school:"Ab",src:"PHB",cast:"1 действие",range:"60 фт",comp:"В,С,М",conc:true,ritual:false,dur:"Концентрация, до 1 мин",desc:"Испытание Харизмы или существо изгнано. Нативный план — временно. Чужой — навсегда после концентрации. На уровень выше +1 существо.",classes:["C","P","W","N","S"]},
+{name:"Ледяной шторм [Ice Storm]",level:4,school:"Ev",src:"PHB",cast:"1 действие",range:"300 фт",comp:"В,С,М",conc:false,ritual:false,dur:"1 раунд",desc:"Цилиндр 20×40 фт. 2d8 дробящего и 4d6 холодного. Испытание Ловкости на половину. Трудная местность. На уровень выше +1d8.",classes:["D","W","S","N"]},
+{name:"Огненная стена [Wall of Fire]",level:4,school:"Ev",src:"PHB",cast:"1 действие",range:"120 фт",comp:"В,С,М",conc:true,ritual:false,dur:"Концентрация, до 1 мин",desc:"Стена огня до 60 фт длиной, 20 фт высотой. Пройти — 5d8 огня (испытание Ловкости на половину). На уровень выше +1d8.",classes:["D","W","S"]},
+{name:"Полиморф [Polymorph]",level:4,school:"Tr",src:"PHB",cast:"1 действие",range:"60 фт",comp:"В,С,М",conc:true,ritual:false,dur:"Концентрация, до 1 часа",desc:"Превращаете существо в зверя. Испытание Мудрости при принудительном превращении.",classes:["B","D","W","S"]},
+{name:"Нистулово жилище [Mordenkainen's Private Sanctum]",level:4,school:"Ab",src:"PHB",cast:"10 минут",range:"120 фт",comp:"В,С,М",conc:false,ritual:false,dur:"24 часа",desc:"Охраняете область (куб со стороной 100 фт). Телепортация невозможна. Видение извне заблокировано.",classes:["W"]},
+{name:"Воздушная стена [Wind Wall]",level:4,school:"Ev",src:"PHB",cast:"1 действие",range:"120 фт",comp:"В,С,М",conc:true,ritual:false,dur:"Концентрация, до 1 мин",desc:"Стена ветра 60×15 фт. Мелкие летящие существа не проходят. Снаряды с помехой. Яды и туман рассеиваются.",classes:["D","W","S","R"]},
+{name:"Вызов небожителей [Conjure Minor Elementals]",level:4,school:"Co",src:"PHB",cast:"1 минута",range:"90 фт",comp:"В,С",conc:true,ritual:false,dur:"Концентрация, до 1 часа",desc:"Призываете элементалей CR ≤2 (до 8 существ).",classes:["D","W"]},
+// ── XGtE ──
+{name:"Фаусто [Charm Monster]",level:4,school:"En",src:"XGtE",cast:"1 действие",range:"30 фт",comp:"В,С",conc:false,ritual:false,dur:"1 час",desc:"Испытание Мудрости или любое существо (не только гуманоид) очаровано. На уровень выше +1 существо.",classes:["B","D","W","S","N"]},
+{name:"Шквал клинков [Sickening Radiance]",level:4,school:"Ev",src:"XGtE",cast:"1 действие",range:"120 фт",comp:"В,С",conc:true,ritual:false,dur:"Концентрация, до 10 мин",desc:"Сфера 30 фт. Существа в области в начале хода: испытание Телосложения или 4d10 лучистого урона + уровень истощения.",classes:["W","S","N"]},
+// ── TCoE ──
+{name:"Призыв конструкта [Summon Construct]",level:4,school:"Co",src:"TCoE",cast:"1 действие",range:"90 фт",comp:"В,С,М",conc:true,ritual:false,dur:"Концентрация, до 1 часа",desc:"Призываете дух конструкта (Глина, Металл или Камень). Уровень духа = уровень заклинания.",classes:["W"]},
+{name:"Призыв элементаля [Summon Elemental]",level:4,school:"Co",src:"TCoE",cast:"1 действие",range:"90 фт",comp:"В,С,М",conc:true,ritual:false,dur:"Концентрация, до 1 часа",desc:"Призываете дух элементаля (Воздух, Земля, Огонь или Вода). Уровень духа = уровень заклинания.",classes:["D","W","S"]},
+// ══ 5 УРОВЕНЬ (5th Level) ══
+// ── PHB ──
+{name:"Телекинез [Telekinesis]",level:5,school:"Tr",src:"PHB",cast:"1 действие",range:"60 фт",comp:"В,С",conc:true,ritual:false,dur:"Концентрация, до 10 мин",desc:"Перемещаете предметы (до 1000 фунтов) и существ силой мысли.",classes:["W","S","N"]},
+{name:"Конус холода [Cone of Cold]",level:5,school:"Ev",src:"PHB",cast:"1 действие",range:"На себя (60-фт конус)",comp:"В,С,М",conc:false,ritual:false,dur:"Мгновенно",desc:"8d8 холодного. Испытание Телосложения на половину. Убитые — ледяные статуи. На уровень выше +1d8.",classes:["W","S","N"]},
+{name:"Воскрешение [Raise Dead]",level:5,school:"Ne",src:"PHB",cast:"1 час",range:"Касание",comp:"В,С,М",conc:false,ritual:false,dur:"Мгновенно",desc:"Возвращаете умершего ≤10 дней назад. Штраф −4, уменьшается на 1 каждые 4 часа отдыха.",classes:["B","C","P","D"]},
+{name:"Облако смерти [Cloudkill]",level:5,school:"Co",src:"PHB",cast:"1 действие",range:"120 фт",comp:"В,С",conc:true,ritual:false,dur:"Концентрация, до 10 мин",desc:"Сфера 20 фт. 5d8 яда. Испытание Телосложения на половину. Движется 10 фт в сторону ветра. На уровень выше +1d8.",classes:["D","W","N","S"]},
+{name:"Телепатическая связь Рары [Rary's Telepathic Bond]",level:5,school:"Di",src:"PHB",cast:"1 действие",range:"30 фт",comp:"В,С,М",conc:false,ritual:true,dur:"1 час",desc:"Телепатическая связь до 8 существ.",classes:["W"]},
+{name:"Масса лечения [Mass Cure Wounds]",level:5,school:"Ev",src:"PHB",cast:"1 действие",range:"60 фт",comp:"В,С",conc:false,ritual:false,dur:"Мгновенно",desc:"До шести существ в пределах 30 фт восстанавливают 3d8 + мод хитов. На уровень выше +1d8.",classes:["B","C","D"]},
+{name:"Истинное видение [Truesight]",level:5,school:"Di",src:"PHB",cast:"1 действие",range:"Касание",comp:"В,С,М",conc:false,ritual:false,dur:"1 час",desc:"Существо видит невидимое, в темноте, через иллюзии и в исходную форму изменённых существ.",classes:["C","W"]},
+{name:"Круговая защита [Circle of Power]",level:5,school:"Ab",src:"PHB",cast:"1 действие",range:"На себя (30 фт)",comp:"В",conc:true,ritual:false,dur:"Концентрация, до 10 мин",desc:"Аура 30 фт. Союзники в области получают преимущество к испытаниям от магических эффектов и при успехе — ноль урона (вместо половины).",classes:["P"]},
+{name:"Ураганный удар [Destructive Wave]",level:5,school:"Ev",src:"PHB",cast:"1 действие",range:"На себя (30 фт)",comp:"В",conc:false,ritual:false,dur:"Мгновенно",desc:"Все существа в пределах 30 фт: 5d6 грома + 5d6 лучистого/некротического. Испытание Телосложения: провал — ещё и сбит с ног.",classes:["P"]},
+// ── XGtE ──
+{name:"Воссоздание [Transmute Rock]",level:5,school:"Tr",src:"XGtE",cast:"1 действие",range:"120 фт",comp:"В,С,М",conc:false,ritual:false,dur:"До рассеивания",desc:"Куб 40 фт камня превращается в грязь или грязь в камень.",classes:["D","W"]},
+{name:"Инфернальный призыв [Infernal Calling]",level:5,school:"Co",src:"XGtE",cast:"1 минута",range:"90 фт",comp:"В,С,М",conc:true,ritual:false,dur:"Концентрация, до 1 часа",desc:"Призываете дьявола CR ≤8. Контроль не гарантирован.",classes:["W","N"]},
+// ── TCoE ──
+{name:"Призыв дракона [Summon Draconic Spirit]",level:5,school:"Co",src:"TCoE",cast:"1 действие",range:"60 фт",comp:"В,С,М",conc:true,ritual:false,dur:"Концентрация, до 1 часа",desc:"Призываете дух дракона (любой тип). Уровень духа = уровень заклинания.",classes:["D","W","S"]},
+// ══ 6 УРОВЕНЬ (6th Level) ══
+{name:"Слово возврата [Word of Recall]",level:6,school:"Co",src:"PHB",cast:"1 действие",range:"5 фт",comp:"В",conc:false,ritual:false,dur:"Мгновенно",desc:"Вы и до 5 существ телепортируетесь в заранее освящённое место.",classes:["C","D"]},
+{name:"Взгляд смерти [Circle of Death]",level:6,school:"Ne",src:"PHB",cast:"1 действие",range:"150 фт",comp:"В,С,М",conc:false,ritual:false,dur:"Мгновенно",desc:"Сфера 60 фт. Испытание Телосложения: 8d6 некротического при провале, половина при успехе. На уровень выше +2d6.",classes:["W","N","S"]},
+{name:"Смертельный взгляд [Eyebite]",level:6,school:"Ne",src:"PHB",cast:"1 действие",range:"На себя",comp:"В,С",conc:true,ritual:false,dur:"Концентрация, до 1 мин",desc:"Каждый ход выбираете видимое существо — испытание Мудрости или эффект: засыпает, напугано или тошнит.",classes:["B","W","N","S"]},
+{name:"Цепная молния [Chain Lightning]",level:6,school:"Ev",src:"PHB",cast:"1 действие",range:"150 фт",comp:"В,С,М",conc:false,ritual:false,dur:"Мгновенно",desc:"Основная цель: 10d8 молнии (испытание Ловкости). До 3 дополнительных целей — 10d8 каждой. На уровень выше +1 цель.",classes:["W","S"]},
+{name:"Дезинтеграция [Disintegrate]",level:6,school:"Tr",src:"PHB",cast:"1 действие",range:"60 фт",comp:"В,С,М",conc:false,ritual:false,dur:"Мгновенно",desc:"Дальнобойная атака заклинанием — 10d6+40 силового. При провале существо превращается в пыль. На уровень выше +3d6+10.",classes:["W","S","N"]},
+// ══ 7 УРОВЕНЬ (7th Level) ══
+{name:"Огненный смерч [Fire Storm]",level:7,school:"Ev",src:"PHB",cast:"1 действие",range:"150 фт",comp:"В,С",conc:false,ritual:false,dur:"Мгновенно",desc:"До 10 кубов 10 фт. Испытание Ловкости: 7d10 огня при провале, половина при успехе.",classes:["C","D","S"]},
+{name:"Смерть пальцем [Finger of Death]",level:7,school:"Ne",src:"PHB",cast:"1 действие",range:"60 фт",comp:"В,С",conc:false,ritual:false,dur:"Мгновенно",desc:"7d8+30 некротического. Испытание Телосложения на половину. Убитый гуманоид встаёт зомби.",classes:["W","N","S"]},
+{name:"Телепортация [Teleport]",level:7,school:"Co",src:"PHB",cast:"1 действие",range:"10 фт",comp:"В",conc:false,ritual:false,dur:"Мгновенно",desc:"Вы и до 8 существ телепортируетесь к месту назначения на этом плане.",classes:["B","W","S"]},
+{name:"Настоящее перевоплощение [True Resurrection]",level:7,school:"Ne",src:"PHB",cast:"1 час",range:"Касание",comp:"В,С,М",conc:false,ritual:false,dur:"Мгновенно",desc:"Умершее существо воссоздаётся в новом теле (дикий облик).",classes:["D"]},
+{name:"Корона безумия [Crown of Stars]",level:7,school:"Ev",src:"PHB",cast:"1 действие",range:"На себя",comp:"В,С",conc:false,ritual:false,dur:"1 час",desc:"7 мерцающих звёзд вокруг головы. Бонусным действием запускаете одну — 4d12 лучистого (дальнобойная атака).",classes:["W","N","S"]},
+// ══ 8 УРОВЕНЬ (8th Level) ══
+{name:"Слово силы: оглушить [Power Word Stun]",level:8,school:"En",src:"PHB",cast:"1 действие",range:"60 фт",comp:"В",conc:false,ritual:false,dur:"Мгновенно",desc:"Если у цели ≤150 хитов — она оглушена. В конце каждого хода: испытание Телосложения для снятия.",classes:["B","W","S","N"]},
+{name:"Солнечный свет [Sunburst]",level:8,school:"Ev",src:"PHB",cast:"1 действие",range:"150 фт",comp:"В,С,М",conc:false,ritual:false,dur:"Мгновенно",desc:"Сфера 60 фт яркого света. Испытание Телосложения: 12d6 лучистого при провале, половина при успехе. Нежить с помехой, слепота.",classes:["C","D","W","S"]},
+{name:"Воздействие разума [Mind Blank]",level:8,school:"Ab",src:"PHB",cast:"1 действие",range:"Касание",comp:"В,С",conc:false,ritual:false,dur:"24 часа",desc:"Иммунитет к психическому урону, чтению мыслей, прорицаниям, очарованию.",classes:["B","W"]},
+{name:"Господство [Dominate Monster]",level:8,school:"En",src:"PHB",cast:"1 действие",range:"60 фт",comp:"В,С",conc:true,ritual:false,dur:"Концентрация, до 1 часа",desc:"Испытание Мудрости или любое существо под вашим контролем.",classes:["B","W","S","N"]},
+// ══ 9 УРОВЕНЬ (9th Level) ══
+{name:"Желание [Wish]",level:9,school:"Co",src:"PHB",cast:"1 действие",range:"На себя",comp:"В",conc:false,ritual:false,dur:"Мгновенно",desc:"Наиболее мощное заклинание. Дублирует любое заклинание ≤8 уровня или переписывает реальность.",classes:["W","S"]},
+{name:"Истинное воскрешение [True Resurrection]",level:9,school:"Ne",src:"PHB",cast:"1 час",range:"Касание",comp:"В,С,М",conc:false,ritual:false,dur:"Мгновенно",desc:"Восстанавливает умершего ≤200 лет назад из любого состояния.",classes:["C","D"]},
+{name:"Гейт [Gate]",level:9,school:"Co",src:"PHB",cast:"1 действие",range:"60 фт",comp:"В,С,М",conc:true,ritual:false,dur:"Концентрация, до 1 мин",desc:"Создаёт портал в другой план. Называете конкретное существо — оно притягивается.",classes:["C","W","S"]},
+{name:"Временная остановка [Time Stop]",level:9,school:"Tr",src:"PHB",cast:"1 действие",range:"На себя",comp:"В",conc:false,ritual:false,dur:"1d4+1 хода",desc:"Останавливаете время для всех, кроме себя.",classes:["W","S"]},
+{name:"Предсказание [Foresight]",level:9,school:"Di",src:"PHB",cast:"1 минута",range:"Касание",comp:"В,С,М",conc:false,ritual:false,dur:"8 часов",desc:"Преимущество к броскам атаки, проверкам и испытаниям. Атаки по цели с помехой.",classes:["B","D","W","N"]},
+{name:"Слово силы: убить [Power Word Kill]",level:9,school:"En",src:"PHB",cast:"1 действие",range:"60 фт",comp:"В",conc:false,ritual:false,dur:"Мгновенно",desc:"Если у цели ≤100 хитов — она умирает мгновенно.",classes:["B","W","S","N"]},
+{name:"Метеоритный дождь [Meteor Swarm]",level:9,school:"Ev",src:"PHB",cast:"1 действие",range:"1 миля",comp:"В,С",conc:false,ritual:false,dur:"Мгновенно",desc:"4 метеора, каждый — сфера 40 фт. 20d6 огня + 20d6 дробящего. Испытание Ловкости на половину.",classes:["W","S"]},
+// ── XGtE/TCoE ──
+{name:"Призыв дракона [Summon Draconic Spirit]",level:5,school:"Co",src:"TCoE",cast:"1 действие",range:"60 фт",comp:"В,С,М",conc:true,ritual:false,dur:"Концентрация, до 1 часа",desc:"Дух дракона (Хромий, Металлический или Гемовый). Статы зависят от уровня заклинания.",classes:["D","W","S"]},
+{name:"Призыв аберрации [Summon Aberration]",level:4,school:"Co",src:"TCoE",cast:"1 действие",range:"90 фт",comp:"В,С,М",conc:true,ritual:false,dur:"Концентрация, до 1 часа",desc:"Призываете дух аберрации (Флааргун, Безглазый или Звёздный). Уровень духа = уровень заклинания.",classes:["B","W","N"]},
+{name:"Призыв зверя [Summon Beast]",level:2,school:"Co",src:"TCoE",cast:"1 действие",range:"90 фт",comp:"В,С,М",conc:true,ritual:false,dur:"Концентрация, до 1 часа",desc:"Призываете духа зверя (Воздух, Земля или Вода). Уровень духа = уровень заклинания.",classes:["D","R"]},
+{name:"Призыв феи [Summon Fey]",level:3,school:"Co",src:"TCoE",cast:"1 действие",range:"90 фт",comp:"В,С,М",conc:true,ritual:false,dur:"Концентрация, до 1 часа",desc:"Призываете духа феи (Веселье, Злоба, Любопытство). Уровень духа = уровень заклинания.",classes:["B","D","W","N","R"]},
 ];
 
 // ════════════════════════════════════════════════════════════
@@ -435,7 +542,7 @@ let cfg={cls:"W",level:1,mod:3,mech:"spellbook",knownLimit:0,cantripLimit:0};
 let spellSets={};
 let scrollBonus=0; // дополнительные заклинания в книге из свитков
 
-let filterLevel="all", filterSchool="", filterComp="", searchQ="";
+let filterLevel="all", filterSchool="", filterComp="", filterSrc="", searchQ="";
 
 // ════════════════════════════════════════════════════════════
 // ВЫЧИСЛЕНИЯ
@@ -703,6 +810,7 @@ function getFiltered(){
       if(filterComp==="ritual"&&!s.ritual) return false;
       if(filterComp==="М"&&!s.comp.includes("М")) return false;
     }
+    if(filterSrc && s.src!==filterSrc) return false;
     if(searchQ&&!s.name.toLowerCase().includes(searchQ)) return false;
     return true;
   }).sort((a,b)=>a.level-b.level||a.name.localeCompare(b.name,"ru"));
@@ -740,6 +848,10 @@ function renderSpells(){
     const sch=document.createElement("div");
     sch.className="spell-school school-"+sp.school;
     sch.textContent=SCHOOL_NAMES[sp.school]||sp.school;
+
+    const srcBadge=document.createElement("span");
+    srcBadge.className="src-badge src-"+(sp.src||"PHB");
+    srcBadge.textContent=sp.src||"PHB";
 
     const acts=document.createElement("div"); acts.className="spell-actions";
 
@@ -784,7 +896,7 @@ function renderSpells(){
     ba.addEventListener("click",e=>{e.stopPropagation();toggleAlways(sp.name);});
     acts.append(ba);
 
-    row.append(dot,main,lvl,sch,acts);
+    row.append(dot,main,lvl,sch,srcBadge,acts);
     row.addEventListener("click",()=>openDetail(sp));
     el.appendChild(row);
   });
@@ -851,6 +963,7 @@ function openDetail(sp){
     </div>
     <div class="sd-badges">
       <span class="sd-badge school-${sp.school}">${lvlLabel} · ${SCHOOL_NAMES[sp.school]||sp.school}</span>
+      <span class="sd-badge src-${sp.src||'PHB'}" style="border-color:inherit">${sp.src||'PHB'}</span>
       ${sp.conc?'<span class="sd-badge sd-badge-conc">Концентрация</span>':""}
       ${sp.ritual?'<span class="sd-badge sd-badge-ritual">Ритуал</span>':""}
     </div>
@@ -1011,6 +1124,7 @@ function makeSelItem(name,sp,key,dotClass){
 document.getElementById("searchInput").addEventListener("input",e=>{searchQ=e.target.value.toLowerCase();renderSpells();});
 document.getElementById("schoolFilter").addEventListener("change",e=>{filterSchool=e.target.value;renderSpells();});
 document.getElementById("compFilter").addEventListener("change",e=>{filterComp=e.target.value;renderSpells();});
+document.getElementById("srcFilter").addEventListener("change",e=>{filterSrc=e.target.value;renderSpells();});
 document.getElementById("selClearBtn").addEventListener("click",()=>{spellSets={};scrollBonus=0;refresh();});
 
 buildSetup();
