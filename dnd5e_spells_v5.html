@@ -1,0 +1,1019 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Заклинания — D&D 5e</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#1a1714;--bg2:#221f1b;--bg3:#2c2822;
+  --border:#3a342c;--border2:#4a433a;
+  --text:#e8ddd0;--text2:#a09080;--text3:#6a5e52;
+  --accent:#c8963c;--accent2:#e8b86d;
+  --bonus:#4a8fa0;--bonus2:#6ab8cc;
+  --book:#7a6fa0;--book2:#a89ecc;
+  --danger:#c0453a;--warn:#c8823c;--ok:#4a9e6a;
+  --radius:6px;--font:'Georgia',serif;--ui:system-ui,sans-serif;
+}
+body{background:var(--bg);color:var(--text);font-family:var(--ui);font-size:14px;min-height:100vh}
+
+/* ── HEADER ── */
+.site-header{background:var(--bg2);border-bottom:1px solid var(--border);padding:.9rem 1.5rem;display:flex;align-items:baseline;gap:1rem;flex-wrap:wrap}
+.site-header h1{font-family:var(--font);font-size:22px;font-weight:normal;color:var(--accent2)}
+.site-header p{font-size:12px;color:var(--text3)}
+
+/* ── SETUP ── */
+.setup-screen{max-width:600px;margin:2.5rem auto;padding:0 1.25rem}
+.setup-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:1.75rem}
+.setup-card h2{font-family:var(--font);font-weight:normal;color:var(--accent2);font-size:18px;margin-bottom:1.25rem}
+.field{margin-bottom:1.1rem}
+.field label{display:block;font-size:11px;color:var(--text2);margin-bottom:5px;text-transform:uppercase;letter-spacing:.05em}
+.seg{display:flex;gap:6px;flex-wrap:wrap}
+.seg-btn{padding:6px 13px;font-size:13px;border-radius:var(--radius);border:1px solid var(--border2);background:var(--bg3);color:var(--text2);cursor:pointer;transition:all .15s;font-family:var(--ui)}
+.seg-btn:hover{border-color:var(--accent);color:var(--text)}
+.seg-btn.active{background:var(--accent);color:#1a1410;border-color:var(--accent);font-weight:600}
+input[type=number],input[type=text],select{background:var(--bg3);border:1px solid var(--border);color:var(--text);border-radius:var(--radius);padding:7px 10px;font-size:13px;font-family:var(--ui);outline:none;transition:border-color .15s;width:100%}
+input[type=number]:focus,input[type=text]:focus,select:focus{border-color:var(--accent)}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.btn-primary{width:100%;padding:10px;background:var(--accent);color:#1a1410;border:none;border-radius:var(--radius);font-size:14px;font-weight:600;cursor:pointer;font-family:var(--ui);margin-top:.75rem;transition:opacity .15s}
+.btn-primary:hover{opacity:.85}
+.hint-box{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:.6rem .9rem;font-size:12px;color:var(--text2);margin-bottom:.75rem;line-height:1.6}
+.hint-box strong{color:var(--accent2)}
+.mech-auto{font-size:11px;color:var(--text3);margin-top:5px}
+.mech-auto span{color:var(--bonus2)}
+
+/* ── APP ── */
+.app{display:none;max-width:1240px;margin:0 auto;padding:1.25rem;grid-template-columns:1fr 310px;gap:1.25rem;align-items:start}
+.app.visible{display:grid}
+@media(max-width:800px){.app.visible{grid-template-columns:1fr}}
+
+/* ── CHAR BAR ── */
+.char-bar{grid-column:1/-1;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:.7rem 1rem;display:flex;align-items:center;gap:.75rem;flex-wrap:wrap}
+.char-info{font-size:13px;color:var(--text2)}
+.char-info strong{color:var(--accent2);font-family:var(--font)}
+.char-badges{display:flex;gap:6px;flex-wrap:wrap;flex:1}
+.badge{padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;border:1px solid;cursor:default}
+.badge-known{background:rgba(200,150,60,.15);border-color:var(--accent);color:var(--accent2)}
+.badge-cantrip{background:rgba(74,143,160,.1);border-color:var(--bonus);color:var(--bonus2)}
+.badge-book{background:rgba(122,111,160,.15);border-color:var(--book);color:var(--book2)}
+.badge-always{background:rgba(74,143,160,.12);border-color:var(--bonus);color:var(--bonus2)}
+.badge-over{background:rgba(192,69,58,.2);border-color:var(--danger);color:#e06860}
+.btn-reset{font-size:11px;color:var(--text3);cursor:pointer;padding:3px 8px;border-radius:var(--radius);border:1px solid var(--border);background:transparent;font-family:var(--ui);transition:all .15s;margin-left:auto;flex-shrink:0}
+.btn-reset:hover{border-color:var(--danger);color:var(--danger)}
+
+/* ── SPELLS PANEL ── */
+.spells-panel{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden}
+.filters{padding:.75rem 1rem;border-bottom:1px solid var(--border);display:flex;gap:8px;flex-wrap:wrap}
+.filters input[type=text]{flex:1;min-width:130px}
+.filters select{min-width:120px;width:auto}
+.level-tabs{display:flex;overflow-x:auto;border-bottom:1px solid var(--border);scrollbar-width:none}
+.level-tabs::-webkit-scrollbar{display:none}
+.level-tab{padding:8px 13px;font-size:12px;color:var(--text2);cursor:pointer;white-space:nowrap;border-bottom:2px solid transparent;flex-shrink:0;transition:all .15s;user-select:none}
+.level-tab:hover{color:var(--text)}
+.level-tab.active{color:var(--accent2);border-bottom-color:var(--accent);font-weight:500}
+.spell-list{max-height:560px;overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--border2) transparent}
+.spell-row{display:flex;align-items:center;padding:7px 12px;border-bottom:1px solid var(--border);gap:8px;cursor:pointer;transition:background .1s}
+.spell-row:last-child{border-bottom:none}
+.spell-row:hover{background:var(--bg3)}
+.spell-row.st-known{background:rgba(200,150,60,.07)}
+.spell-row.st-book{background:rgba(122,111,160,.07)}
+.spell-row.st-prepared{background:rgba(200,150,60,.12)}
+.spell-row.st-always{background:rgba(74,143,160,.07)}
+.spell-dot{width:7px;height:7px;border-radius:50%;border:1.5px solid var(--border2);flex-shrink:0;transition:all .15s}
+.st-known .spell-dot{background:var(--accent);border-color:var(--accent)}
+.st-book .spell-dot{background:var(--book);border-color:var(--book)}
+.st-prepared .spell-dot{background:var(--accent2);border-color:var(--accent2)}
+.st-always .spell-dot{background:var(--bonus);border-color:var(--bonus)}
+.spell-main{flex:1;min-width:0}
+.spell-name{font-size:13px;color:var(--text);font-weight:500}
+.spell-tags{font-size:11px;color:var(--text3);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.spell-lvl{font-size:11px;color:var(--text3);min-width:22px;text-align:center;flex-shrink:0}
+.spell-school{font-size:11px;min-width:74px;text-align:right;flex-shrink:0}
+.spell-actions{display:flex;gap:4px;flex-shrink:0}
+.sp-btn{padding:3px 8px;font-size:11px;border-radius:var(--radius);border:1px solid var(--border2);cursor:pointer;font-family:var(--ui);transition:all .15s;white-space:nowrap;background:transparent;color:var(--text2)}
+.sp-btn:hover{border-color:var(--accent);color:var(--text)}
+.sp-btn.on-known{background:var(--accent);border-color:var(--accent);color:#1a1410;font-weight:600}
+.sp-btn.on-book{background:var(--book);border-color:var(--book);color:#fff;font-weight:600}
+.sp-btn.on-prepared{background:var(--accent2);border-color:var(--accent2);color:#1a1410;font-weight:600}
+.sp-btn.on-always{background:var(--bonus);border-color:var(--bonus);color:#fff;font-weight:600}
+.no-results{padding:2.5rem;text-align:center;font-size:13px;color:var(--text3)}
+.school-Ab{color:#6ab8cc}.school-Co{color:#9a8ecc}.school-Di{color:#a0c878}
+.school-En{color:#cc8ea0}.school-Ev{color:#cc6e4a}.school-Il{color:#8eacc8}
+.school-Ne{color:#7a9e7a}.school-Tr{color:#c8b44a}
+
+/* ── DETAIL POPUP ── */
+.spell-detail{display:none;position:fixed;inset:0;z-index:100;align-items:center;justify-content:center;padding:1rem}
+.spell-detail.open{display:flex}
+.sd-overlay{position:absolute;inset:0;background:rgba(10,8,6,.78);cursor:pointer}
+.sd-card{position:relative;background:var(--bg2);border:1px solid var(--border2);border-radius:var(--radius);padding:1.5rem;max-width:520px;width:100%;max-height:82vh;overflow-y:auto;z-index:1;scrollbar-width:thin;scrollbar-color:var(--border2) transparent}
+.sd-header{display:flex;justify-content:space-between;align-items:flex-start;gap:.75rem;margin-bottom:.75rem}
+.sd-name{font-family:var(--font);font-size:20px;color:var(--accent2);font-weight:normal;line-height:1.2}
+.sd-close{background:transparent;border:none;color:var(--text3);font-size:22px;cursor:pointer;line-height:1;padding:0 2px;flex-shrink:0}
+.sd-close:hover{color:var(--text)}
+.sd-badges{display:flex;gap:5px;margin-bottom:.9rem;flex-wrap:wrap}
+.sd-badge{padding:2px 8px;border-radius:3px;font-size:11px;border:1px solid;color:var(--text2);border-color:var(--border2)}
+.sd-badge-conc{background:rgba(200,130,60,.15);border-color:var(--warn);color:var(--warn)}
+.sd-badge-ritual{background:rgba(74,143,160,.15);border-color:var(--bonus);color:var(--bonus2)}
+.sd-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px 18px;margin-bottom:1rem}
+.sd-field-label{color:var(--text3);text-transform:uppercase;font-size:10px;letter-spacing:.05em;margin-bottom:2px}
+.sd-field-val{color:var(--text);font-size:13px}
+.sd-desc{font-size:13px;color:var(--text2);line-height:1.65;border-top:1px solid var(--border);padding-top:.75rem}
+.sd-actions{display:flex;gap:7px;margin-top:1rem;padding-top:.75rem;border-top:1px solid var(--border);flex-wrap:wrap}
+.sd-btn{flex:1;min-width:120px;padding:8px;font-size:12px;border-radius:var(--radius);border:1px solid var(--border2);cursor:pointer;font-family:var(--ui);transition:all .15s;background:transparent;color:var(--text2)}
+.sd-btn:hover{border-color:var(--accent);color:var(--text)}
+.sd-btn.on-known{background:var(--accent);border-color:var(--accent);color:#1a1410;font-weight:600}
+.sd-btn.on-book{background:var(--book);border-color:var(--book);color:#fff;font-weight:600}
+.sd-btn.on-prepared{background:var(--accent2);border-color:var(--accent2);color:#1a1410;font-weight:600}
+.sd-btn.on-always{background:var(--bonus);border-color:var(--bonus);color:#fff;font-weight:600}
+
+/* ── SEL PANEL ── */
+.sel-panel{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:1rem;position:sticky;top:1.25rem}
+.sel-title{font-family:var(--font);font-size:15px;color:var(--accent2);font-weight:normal;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center}
+.sel-clear{font-size:11px;color:var(--text3);cursor:pointer;padding:3px 8px;border-radius:var(--radius);border:1px solid var(--border);background:transparent;font-family:var(--ui);transition:all .15s}
+.sel-clear:hover{border-color:var(--danger);color:var(--danger)}
+.limit-block{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:.6rem .75rem;margin-bottom:8px}
+.limit-label{font-size:11px;color:var(--text2);margin-bottom:4px;display:flex;justify-content:space-between}
+.limit-label strong{color:var(--accent2)}
+.limit-bar-wrap{height:4px;background:var(--bg);border-radius:2px;overflow:hidden;margin-bottom:3px}
+.limit-bar{height:100%;border-radius:2px;transition:width .3s,background .3s}
+.limit-row{display:flex;justify-content:space-between;font-size:11px}
+.limit-used{color:var(--text2)}.limit-max{color:var(--text3)}.limit-over{color:var(--danger);font-weight:600}
+/* scrolls adder */
+.scrolls-row{display:flex;align-items:center;gap:6px;margin-top:6px;padding-top:6px;border-top:1px solid var(--border)}
+.scrolls-row span{font-size:11px;color:var(--text3);flex:1}
+.scroll-btn{width:22px;height:22px;border-radius:var(--radius);border:1px solid var(--border2);background:var(--bg);cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;color:var(--text2);line-height:1}
+.scroll-btn:hover{border-color:var(--book2);color:var(--book2)}
+.scroll-count{font-size:13px;font-weight:600;color:var(--book2);min-width:20px;text-align:center}
+.sel-section{margin-bottom:10px}
+.sel-sec-hdr{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--text3);margin-bottom:4px;display:flex;justify-content:space-between}
+.sel-sec-hdr span:last-child{color:var(--text2)}
+.sel-items{max-height:180px;overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--border2) transparent}
+.sel-item{display:flex;align-items:center;gap:6px;padding:4px 2px;border-bottom:1px solid var(--border);cursor:pointer}
+.sel-item:last-child{border-bottom:none}
+.sel-item:hover .sel-item-name{color:var(--accent2)}
+.sel-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.dot-known{background:var(--accent)}.dot-book{background:var(--book)}.dot-prepared{background:var(--accent2)}.dot-always{background:var(--bonus)}
+.sel-item-name{flex:1;font-size:12px;color:var(--text)}
+.sel-item-lvl{font-size:11px;color:var(--text3);flex-shrink:0}
+.sel-item-rm{font-size:15px;color:var(--text3);line-height:1;flex-shrink:0}
+.sel-item-rm:hover{color:var(--danger)}
+.sel-empty{font-size:12px;color:var(--text3);text-align:center;padding:.6rem 0;font-style:italic}
+.divider{height:1px;background:var(--border);margin:8px 0}
+</style>
+</head>
+<body>
+<header class="site-header">
+  <h1>✦ Заклинания — D&D 5e</h1>
+  <p>Калькулятор заклинаний · Player's Handbook</p>
+</header>
+
+<!-- SETUP -->
+<div class="setup-screen" id="setupScreen">
+  <div class="setup-card">
+    <h2>Настройка персонажа</h2>
+    <div class="field">
+      <label>Класс</label>
+      <div class="seg" id="classButtons"></div>
+    </div>
+    <div class="field row2">
+      <div>
+        <label>Уровень персонажа</label>
+        <input type="number" id="charLevel" min="1" max="20" value="1" oninput="onSetupChange()">
+      </div>
+      <div>
+        <label>Модификатор заклинательной хар-ки</label>
+        <input type="number" id="spellMod" min="-5" max="10" value="3" oninput="onSetupChange()">
+      </div>
+    </div>
+
+    <div id="hintBox"></div>
+
+    <!-- Механика: авто + возможность переключить -->
+    <div class="field">
+      <label>Механика заклинаний</label>
+      <div class="seg" id="mechButtons">
+        <button class="seg-btn" data-mech="known">Известные</button>
+        <button class="seg-btn" data-mech="prepared">Готовимые</button>
+        <button class="seg-btn" data-mech="spellbook">Книга заклинаний</button>
+      </div>
+      <div class="mech-auto" id="mechAutoLabel"></div>
+    </div>
+
+    <!-- Лимит известных (для known) -->
+    <div class="field" id="knownLimitField" style="display:none">
+      <label>Макс. известных заклинаний · <span style="color:var(--text3);font-weight:normal">авто по PHB</span></label>
+      <div style="display:flex;gap:8px;align-items:center">
+        <input type="number" id="knownLimit" min="0" max="200" value="0" style="width:80px">
+        <span id="knownLimitHint" style="font-size:11px;color:var(--text3)"></span>
+      </div>
+    </div>
+
+    <!-- Заговоры -->
+    <div class="field">
+      <label>Макс. известных заговоров · <span style="color:var(--text3);font-weight:normal">авто по PHB</span></label>
+      <div style="display:flex;gap:8px;align-items:center">
+        <input type="number" id="cantripLimit" min="0" max="20" value="0" style="width:80px">
+        <span id="cantripLimitHint" style="font-size:11px;color:var(--text3)"></span>
+      </div>
+    </div>
+
+    <button class="btn-primary" onclick="startApp()">Начать ▶</button>
+  </div>
+</div>
+
+<!-- APP -->
+<div class="app" id="appScreen">
+  <div class="char-bar" id="charBar"></div>
+  <div class="spells-panel">
+    <div class="filters">
+      <input type="text" id="searchInput" placeholder="Поиск заклинания...">
+      <select id="schoolFilter">
+        <option value="">Все школы</option>
+        <option value="Ab">Ограждение</option>
+        <option value="Co">Вызов</option>
+        <option value="Di">Прорицание</option>
+        <option value="En">Очарование</option>
+        <option value="Ev">Воплощение</option>
+        <option value="Il">Иллюзия</option>
+        <option value="Ne">Некромантия</option>
+        <option value="Tr">Преобразование</option>
+      </select>
+      <select id="compFilter">
+        <option value="">Все</option>
+        <option value="conc">Концентрация</option>
+        <option value="ritual">Ритуал</option>
+        <option value="noM">Без М-компонента</option>
+        <option value="М">Есть М-компонент</option>
+      </select>
+    </div>
+    <div class="level-tabs" id="levelTabs"></div>
+    <div class="spell-list" id="spellList"></div>
+  </div>
+
+  <div class="sel-panel">
+    <div class="sel-title">Список заклинаний <button class="sel-clear" id="selClearBtn">Очистить</button></div>
+    <div id="limitSection"></div>
+    <!-- Секции заполняются динамически в зависимости от механики -->
+    <div id="selSections"></div>
+  </div>
+</div>
+
+<div class="spell-detail" id="spellDetail">
+  <div class="sd-overlay" onclick="closeDetail()"></div>
+  <div class="sd-card" id="sdCard"></div>
+</div>
+
+<script>
+// ════════════════════════════════════════════════════════════
+// ДАННЫЕ
+// ════════════════════════════════════════════════════════════
+// classes: B=Бард C=Жрец D=Друид P=Паладин R=Следопыт K=Плут W=Волшебник N=Колдун S=Чародей
+const SPELLS = [
+{name:"Волшебная рука",level:0,school:"Co",cast:"1 действие",range:"30 фт",comp:"В,С",conc:false,ritual:false,dur:"1 мин",desc:"Создаёт призрачную руку, которая манипулирует предметами, открывает двери, достаёт вещи из контейнеров. Не может атаковать или применять магические предметы.",classes:["B","W","N"]},
+{name:"Друидизм",level:0,school:"Tr",cast:"1 действие",range:"30 фт",comp:"В,С",conc:false,ritual:false,dur:"Мгновенно",desc:"Небольшие природные эффекты: создать иллюзию природы, ускорить рост растений, предсказать погоду, заставить цветок расцвести.",classes:["D"]},
+{name:"Истинный удар",level:0,school:"Di",cast:"1 действие",range:"30 фт",comp:"С",conc:true,ritual:false,dur:"До конца след. хода",desc:"Вы получаете понимание защиты цели. До конца следующего хода совершаете следующую атаку по цели с преимуществом.",classes:["B","W","N","S","K"]},
+{name:"Кислотные брызги",level:0,school:"Co",cast:"1 действие",range:"60 фт",comp:"В,С",conc:false,ritual:false,dur:"Мгновенно",desc:"Бросаете пузырь кислоты. Испытание Ловкости или 1d6 кислотного урона.",classes:["W","S"]},
+{name:"Клинок зелёного пламени",level:0,school:"Ev",cast:"1 действие",range:"5 фт",comp:"В,М",conc:false,ritual:false,dur:"Мгновенно",desc:"Атака оружием ближнего боя, зелёное пламя перепрыгивает на существо в пределах 5 фт. Второе существо получает урон огнём = модификатору заклинательной хар-ки.",classes:["W","N","S","K"]},
+{name:"Колдовской заряд",level:0,school:"Ev",cast:"1 действие",range:"120 фт",comp:"В,С",conc:false,ritual:false,dur:"Мгновенно",desc:"Дальнобойная атака заклинанием — 1d10 урона силовым полем.",classes:["N"]},
+{name:"Огонь фей",level:0,school:"Ev",cast:"1 действие",range:"60 фт",comp:"В",conc:true,ritual:false,dur:"Концентрация, до 1 мин",desc:"Куб 20 фт. Существа подсвечиваются. Атаки по освещённым существам совершаются с преимуществом.",classes:["B","D"]},
+{name:"Огненный болт",level:0,school:"Ev",cast:"1 действие",range:"120 фт",comp:"В,С",conc:false,ritual:false,dur:"Мгновенно",desc:"Дальнобойная атака заклинанием — 1d10 урона огнём.",classes:["W","S","N"]},
+{name:"Луч мороза",level:0,school:"Ev",cast:"1 действие",range:"60 фт",comp:"В,С",conc:false,ritual:false,dur:"Мгновенно",desc:"Дальнобойная атака заклинанием — 1d8 холодного урона, скорость цели уменьшается на 10 фт.",classes:["W","S","N"]},
+{name:"Мороз",level:0,school:"Ev",cast:"1 действие",range:"Касание",comp:"В,С",conc:false,ritual:false,dur:"Мгновенно",desc:"Испытание Телосложения или 1d6 холодного урона и цель лишается реакции до начала своего следующего хода.",classes:["D","W","S","N"]},
+{name:"Слово боли",level:0,school:"En",cast:"1 действие",range:"60 фт",comp:"В",conc:false,ritual:false,dur:"Мгновенно",desc:"Испытание Телосложения или 1d6 психического урона.",classes:["B","W","N","S","K"]},
+{name:"Терновый хлыст",level:0,school:"Tr",cast:"1 действие",range:"30 фт",comp:"В",conc:false,ritual:false,dur:"Мгновенно",desc:"Атака заклинанием — 1d6 рубящего урона, существо до Большого размера притягивается на 10 фт к вам.",classes:["D"]},
+{name:"Удар грома",level:0,school:"Ev",cast:"1 действие",range:"5 фт",comp:"В",conc:false,ritual:false,dur:"Мгновенно",desc:"Испытание Телосложения: 1d6 звукового урона и отброс на 10 фт. При успехе — половина.",classes:["W","S","N","D"]},
+{name:"Фокус",level:0,school:"Il",cast:"1 действие",range:"30 фт",comp:"В,С",conc:false,ritual:false,dur:"1 час",desc:"Создаёт иллюзорный звук, изображение, запах или иное ощущение.",classes:["B","W","N","S"]},
+{name:"Починка",level:0,school:"Tr",cast:"1 минута",range:"Касание",comp:"В,С,М",conc:false,ritual:false,dur:"Мгновенно",desc:"Чинит один разрыв или разлом в предмете.",classes:["B","C","D","W","S"]},
+{name:"Сакральный огонь",level:0,school:"Ev",cast:"1 действие",range:"60 фт",comp:"В,С",conc:false,ritual:false,dur:"Мгновенно",desc:"Испытание Ловкости или 1d8 урона лучистой энергией. За укрытием не спрятаться.",classes:["C"]},
+{name:"Ядовитые брызги",level:0,school:"Co",cast:"1 действие",range:"10 фт",comp:"В,С",conc:false,ritual:false,dur:"Мгновенно",desc:"Испытание Телосложения или 1d12 урона ядом.",classes:["D","W","S","N"]},
+{name:"Пляска огней",level:0,school:"Ev",cast:"1 действие",range:"60 фт",comp:"В,С,М",conc:true,ritual:false,dur:"Концентрация, до 1 мин",desc:"До четырёх огоньков в пределах 20 фт. Каждый даёт тусклый свет в пределах 10 фт.",classes:["B","W"]},
+{name:"Танцующие огни",level:0,school:"Ev",cast:"1 действие",range:"120 фт",comp:"В,С,М",conc:true,ritual:false,dur:"Концентрация, до 1 мин",desc:"До четырёх факелоподобных огоньков или один призрачный гуманоид.",classes:["B","W","S"]},
+{name:"Посыл послания",level:0,school:"Tr",cast:"1 действие",range:"120 фт",comp:"В,С,М",conc:false,ritual:false,dur:"1 раунд",desc:"Шёпотом передаёте сообщение до 25 слов. Цель слышит и может ответить.",classes:["B","W","S"]},
+{name:"Сопротивление",level:0,school:"Ab",cast:"1 действие",range:"Касание",comp:"В,С,М",conc:true,ritual:false,dur:"Концентрация, до 1 мин",desc:"Цель один раз может прибавить d4 к одному испытанию.",classes:["C","D"]},
+{name:"Руководство",level:0,school:"Di",cast:"1 действие",range:"Касание",comp:"В,С",conc:true,ritual:false,dur:"Концентрация, до 1 мин",desc:"Цель один раз может прибавить d4 к одной проверке характеристики.",classes:["C","D"]},
+{name:"Пронизывающий взор",level:0,school:"Di",cast:"1 действие",range:"30 фт",comp:"В,С",conc:false,ritual:false,dur:"Мгновенно",desc:"Испытание Мудрости или 1d6 психического урона и цель не может использовать реакции.",classes:["B","W","S"]},
+// ══ 1 УРОВЕНЬ ══
+{name:"Благословение",level:1,school:"En",cast:"1 действие",range:"30 фт",comp:"В,С,М",conc:true,ritual:false,dur:"Концентрация, до 1 мин",desc:"До трёх существ прибавляют 1d4 к броскам атаки и испытаниям.",classes:["C","P"]},
+{name:"Волна грома",level:1,school:"Ev",cast:"1 действие",range:"На себя (15-фт куб)",comp:"В,С",conc:false,ritual:false,dur:"Мгновенно",desc:"Испытание Телосложения: 2d8 звукового урона и отброс на 10 фт. При успехе вдвое меньше.",classes:["B","D","W","S"]},
+{name:"Волшебный снаряд",level:1,school:"Ev",cast:"1 действие",range:"120 фт",comp:"В,С",conc:false,ritual:false,dur:"Мгновенно",desc:"Три дротика магической силы автоматически поражают цели — 1d4+1 каждый. На каждый уровень выше +1 дротик.",classes:["W","S","N"]},
+{name:"Лечение ран",level:1,school:"Ev",cast:"1 действие",range:"Касание",comp:"В,С",conc:false,ritual:false,dur:"Мгновенно",desc:"1d8 + мод хитов. На каждый уровень выше +1d8.",classes:["B","C","D","P","R"]},
+{name:"Доспехи мага",level:1,school:"Ab",cast:"1 действие",range:"Касание",comp:"В,С,М",conc:false,ritual:false,dur:"8 часов",desc:"КБ существа без доспехов = 13 + мод Ловкости.",classes:["W","N","S"]},
+{name:"Очаровать человека",level:1,school:"En",cast:"1 действие",range:"30 фт",comp:"В,С",conc:false,ritual:false,dur:"1 час",desc:"Испытание Мудрости или гуманоид очарован и воспринимает вас как хорошего знакомого.",classes:["B","D","W","S","N"]},
+{name:"Опутывание",level:1,school:"Co",cast:"1 действие",range:"90 фт",comp:"В,С",conc:true,ritual:false,dur:"Концентрация, до 1 мин",desc:"Квадрат 20×20 фт. Испытание Силы или существа опутаны.",classes:["D","R"]},
+{name:"Героизм",level:1,school:"En",cast:"1 действие",range:"Касание",comp:"В,С",conc:true,ritual:false,dur:"Концентрация, до 1 мин",desc:"Существо не может быть напугано, получает временные хиты = вашему модификатору.",classes:["B","P"]},
+{name:"Щит",level:1,school:"Ab",cast:"1 реакция",range:"На себя",comp:"В,С",conc:false,ritual:false,dur:"1 раунд",desc:"+5 к КБ до начала следующего хода, включая атаку-триггер. Нет урона от Волшебного снаряда.",classes:["W","S"]},
+{name:"Сон",level:1,school:"En",cast:"1 действие",range:"90 фт",comp:"В,С,М",conc:false,ritual:false,dur:"1 мин",desc:"Бросьте 5d8 — столько хитов существ можно усыпить. На каждый уровень выше +2d8.",classes:["B","W","S"]},
+{name:"Исцеляющее слово",level:1,school:"Ev",cast:"1 бонусное действие",range:"60 фт",comp:"В",conc:false,ritual:false,dur:"Мгновенно",desc:"1d4 + мод хитов. На каждый уровень выше +1d4.",classes:["B","C","D"]},
+{name:"Обнаружение магии",level:1,school:"Di",cast:"1 действие",range:"На себя",comp:"В,С",conc:true,ritual:true,dur:"Концентрация, до 10 мин",desc:"Чувствуете присутствие магии в пределах 30 фт. Видите ауры.",classes:["B","C","D","P","R","W","S","N"]},
+{name:"Опознание",level:1,school:"Di",cast:"1 минута",range:"Касание",comp:"В,С,М",conc:false,ritual:true,dur:"Мгновенно",desc:"Узнаёте свойства магического предмета или заклинания на существе.",classes:["B","W"]},
+{name:"Вызов фамильяра",level:1,school:"Co",cast:"1 час",range:"10 фт",comp:"В,С,М",conc:false,ritual:true,dur:"Мгновенно",desc:"Вызываете фамильяра — духа в форме животного.",classes:["W","N"]},
+{name:"Длительный шаг",level:1,school:"Tr",cast:"1 бонусное действие",range:"На себя",comp:"В",conc:false,ritual:false,dur:"1 раунд",desc:"Скорость удваивается в этом ходу.",classes:["B","D","R","W","S","N"]},
+{name:"Цвет брызг",level:1,school:"Il",cast:"1 действие",range:"На себя (15-фт конус)",comp:"В,С,М",conc:false,ritual:false,dur:"1 раунд",desc:"Существа с суммарными хитами до 6 ослепляются до конца следующего хода.",classes:["W","S"]},
+{name:"Гром небесный",level:1,school:"Ev",cast:"1 реакция",range:"На себя",comp:"В",conc:false,ritual:false,dur:"Мгновенно",desc:"Атакующий в пределах 5 фт получает 2d8 урона молнией. На каждый уровень выше +1d8.",classes:["S","N"]},
+{name:"Хаотические брызги",level:1,school:"Ev",cast:"1 бонусное действие",range:"На себя",comp:"В",conc:true,ritual:false,dur:"Концентрация, до 1 мин",desc:"+1d6 случайного урона к следующей атаке.",classes:["S","N"]},
+{name:"Слово повеления",level:1,school:"En",cast:"1 действие",range:"60 фт",comp:"В",conc:false,ritual:false,dur:"1 раунд",desc:"Одно слово-команда гуманоиду. Испытание Мудрости или выполняет.",classes:["C","P"]},
+{name:"Стремительный отход",level:1,school:"Tr",cast:"1 бонусное действие",range:"На себя",comp:"В,С",conc:false,ritual:false,dur:"10 минут",desc:"Рывок можно совершать бонусным действием на каждом ходу.",classes:["N","K","D","R"]},
+{name:"Знак против зла",level:1,school:"Ab",cast:"1 действие",range:"Касание",comp:"В,С",conc:true,ritual:false,dur:"Концентрация, до 10 мин",desc:"Преимущество к испытаниям против заклинаний существ противоположного мировоззрения.",classes:["C","D","P","R","W"]},
+{name:"Понимание языков",level:1,school:"Di",cast:"1 действие",range:"На себя",comp:"В,С,М",conc:false,ritual:true,dur:"1 час",desc:"Понимаете любой разговорный язык и любой письменный.",classes:["B","W","N","S"]},
+{name:"Безмолвный образ",level:1,school:"Il",cast:"1 действие",range:"60 фт",comp:"В,С,М",conc:true,ritual:false,dur:"Концентрация, до 10 мин",desc:"Образ объекта не крупнее куба 15 фт. Бонусным действием перемещаете.",classes:["B","W","S"]},
+{name:"Охота ведьм",level:1,school:"Di",cast:"1 бонусное действие",range:"На себя",comp:"В,С",conc:true,ritual:false,dur:"Концентрация, до 1 часа",desc:"+1d6 урона оружием по отмеченной добыче. Чувствуете её местонахождение.",classes:["R"]},
+// ══ 2 УРОВЕНЬ ══
+{name:"Туманный шаг",level:2,school:"Co",cast:"1 бонусное действие",range:"На себя",comp:"В",conc:false,ritual:false,dur:"Мгновенно",desc:"Телепортируетесь в незанятое место в пределах 30 фт.",classes:["W","S","N"]},
+{name:"Незримость",level:2,school:"Il",cast:"1 действие",range:"Касание",comp:"В,С,М",conc:true,ritual:false,dur:"Концентрация, до 1 часа",desc:"Существо невидимо до конца заклинания или пока не атакует и не читает заклинание.",classes:["B","W","S","N","K"]},
+{name:"Тьма",level:2,school:"Ev",cast:"1 действие",range:"60 фт",comp:"В,М",conc:true,ritual:false,dur:"Концентрация, до 10 мин",desc:"Магическая тьма радиусом 15 фт. Непроницаема для тёмного зрения.",classes:["W","N","S"]},
+{name:"Паутина",level:2,school:"Co",cast:"1 действие",range:"60 фт",comp:"В,С,М",conc:true,ritual:false,dur:"Концентрация, до 1 часа",desc:"Куб 20 фт густой паутины. Испытание Ловкости или опутан.",classes:["W","S"]},
+{name:"Удержание личности",level:2,school:"En",cast:"1 действие",range:"60 фт",comp:"В,С,М",conc:true,ritual:false,dur:"Концентрация, до 1 мин",desc:"Испытание Мудрости или гуманоид парализован.",classes:["B","W","S","N","C"]},
+{name:"Зеркальный образ",level:2,school:"Il",cast:"1 действие",range:"На себя",comp:"В,С",conc:false,ritual:false,dur:"1 мин",desc:"Три иллюзорных двойника. При попадании бросок d20 определяет, попал ли в копию.",classes:["B","W","S","N"]},
+{name:"Духовное оружие",level:2,school:"Ev",cast:"1 бонусное действие",range:"60 фт",comp:"В,С",conc:false,ritual:false,dur:"1 мин",desc:"Призрачное оружие. Бонусным действием переместить и атаковать снова.",classes:["C","P"]},
+{name:"Менее восстановление",level:2,school:"Di",cast:"1 действие",range:"Касание",comp:"В,С",conc:false,ritual:false,dur:"Мгновенно",desc:"Заканчиваете одну болезнь или одно состояние: глухота, слепота, паралич, отравление.",classes:["B","C","D","P","R"]},
+{name:"Стрела кислоты",level:2,school:"Ev",cast:"1 действие",range:"90 фт",comp:"В,С,М",conc:false,ritual:false,dur:"1 раунд",desc:"4d4 кислотного урона. При попадании цель покрывается кислотой: +2d4 в конце следующего хода.",classes:["W","S"]},
+{name:"Пылающая сфера",level:2,school:"Co",cast:"1 действие",range:"60 фт",comp:"В,С,М",conc:true,ritual:false,dur:"Концентрация, до 1 мин",desc:"Пылающий шар 5 фт. Испытание Ловкости или 2d6 огня. Бонусным действием катите.",classes:["D","W","S"]},
+{name:"Тишина",level:2,school:"Il",cast:"1 действие",range:"120 фт",comp:"В,С",conc:true,ritual:true,dur:"Концентрация, до 10 мин",desc:"Сфера 20 фт без звука. Нельзя читать заклинания с вербальным компонентом.",classes:["B","C","R"]},
+{name:"Шаг тени",level:2,school:"Co",cast:"1 бонусное действие",range:"На себя",comp:"В",conc:false,ritual:false,dur:"Мгновенно",desc:"В тусклом свете или темноте телепортируетесь на 120 фт в тусклый свет или тьму.",classes:["N","K"]},
+{name:"Облако кинжалов",level:2,school:"Co",cast:"1 действие",range:"60 фт",comp:"В,С,М",conc:true,ritual:false,dur:"Концентрация, до 1 мин",desc:"Куб 5 фт летающих кинжалов. Испытание Ловкости или 4d4 рубящего.",classes:["B","N","K","W"]},
+{name:"Доброе благополучие",level:2,school:"En",cast:"1 действие",range:"30 фт",comp:"В,С",conc:false,ritual:false,dur:"8 часов",desc:"Преимущество к испытаниям Мудрости. Иммунитет к испугу.",classes:["B","C","D","P","R"]},
+{name:"Невидимость высшая",level:4,school:"Il",cast:"1 действие",range:"Касание",comp:"В,С",conc:true,ritual:false,dur:"Концентрация, до 1 мин",desc:"Существо невидимо, даже когда атакует или читает заклинания.",classes:["B","W","S","N"]},
+// ══ 3 УРОВЕНЬ ══
+{name:"Огненный шар",level:3,school:"Ev",cast:"1 действие",range:"150 фт",comp:"В,С,М",conc:false,ritual:false,dur:"Мгновенно",desc:"Сфера 20 фт. Испытание Ловкости: 8d6 огня при провале, вдвое меньше при успехе. На уровень выше +1d6.",classes:["W","S","N"]},
+{name:"Молния",level:3,school:"Ev",cast:"1 действие",range:"На себя (100-фт линия)",comp:"В,С,М",conc:false,ritual:false,dur:"Мгновенно",desc:"Линия 100×5 фт. 8d6 молнии. Испытание Ловкости на половину. На уровень выше +1d6.",classes:["W","S","N"]},
+{name:"Контрзаклинание",level:3,school:"Ab",cast:"1 реакция",range:"60 фт",comp:"С",conc:false,ritual:false,dur:"Мгновенно",desc:"Прерываете заклинание ≤3 уровня автоматически. Выше — проверка (СЛ 10 + уровень).",classes:["W","S","N"]},
+{name:"Рассеивание магии",level:3,school:"Ab",cast:"1 действие",range:"120 фт",comp:"В,С",conc:false,ritual:false,dur:"Мгновенно",desc:"Заклинания ≤3 уровня на цели заканчиваются. Для выше — проверка (СЛ 10 + уровень).",classes:["B","C","D","W","S","N","P","R"]},
+{name:"Полёт",level:3,school:"Tr",cast:"1 действие",range:"Касание",comp:"В,С,М",conc:true,ritual:false,dur:"Концентрация, до 10 мин",desc:"Скорость полёта 60 фт. На уровень выше +1 существо.",classes:["W","S","N"]},
+{name:"Гипнотический узор",level:3,school:"Il",cast:"1 действие",range:"120 фт",comp:"С,М",conc:true,ritual:false,dur:"Концентрация, до 1 мин",desc:"Куб 30 фт. Испытание Мудрости или очарованы и недееспособны.",classes:["B","W","S","N"]},
+{name:"Духовный страж",level:3,school:"Co",cast:"1 бонусное действие",range:"На себя (15 фт)",comp:"В,С,М",conc:true,ritual:false,dur:"Концентрация, до 10 мин",desc:"Духи в радиусе 15 фт. 3d8 урона (испытание Мудрости на половину). Скорость врагов вдвое меньше.",classes:["C"]},
+{name:"Ускорение",level:3,school:"Tr",cast:"1 действие",range:"30 фт",comp:"В,С,М",conc:true,ritual:false,dur:"Концентрация, до 1 мин",desc:"Скорость цели удваивается, +2 к КБ, преимущество к испытаниям Ловкости, дополнительное действие атаки.",classes:["W","S"]},
+{name:"Замедление",level:3,school:"Tr",cast:"1 действие",range:"120 фт",comp:"В,С,М",conc:true,ritual:false,dur:"Концентрация, до 1 мин",desc:"До шести существ. Испытание Мудрости или замедляются: половина скорости, −2 к КБ и испытаниям Ловкости.",classes:["W","S"]},
+{name:"Страх",level:3,school:"Il",cast:"1 действие",range:"На себя (30-фт конус)",comp:"В,С,М",conc:true,ritual:false,dur:"Концентрация, до 1 мин",desc:"Испытание Мудрости или напуганы и спасаются бегством.",classes:["B","W","S","N"]},
+{name:"Шатёр Леомунда",level:3,school:"Co",cast:"1 минута",range:"20 фт",comp:"В,С,М",conc:false,ritual:true,dur:"8 часов",desc:"Купол с комфортной температурой и защитой от непогоды.",classes:["B","W"]},
+{name:"Анимация мертвецов",level:3,school:"Ne",cast:"1 минута",range:"10 фт",comp:"В,С,М",conc:false,ritual:false,dur:"Мгновенно",desc:"Скелет или зомби из костей/трупа гуманоида. Подчиняются 24 часа. На уровень выше +2 нежити.",classes:["C","W","N"]},
+{name:"Кажущийся мёртвым",level:3,school:"Ne",cast:"1 действие",range:"Касание",comp:"В,С,М",conc:false,ritual:true,dur:"1 час",desc:"Выглядите мёртвым для любого осмотра.",classes:["B","C","W","N","K"]},
+{name:"Дневной свет",level:3,school:"Ev",cast:"1 действие",range:"60 фт",comp:"В,С",conc:false,ritual:false,dur:"1 час",desc:"Сфера яркого света радиусом 60 фт, тусклый ещё 60 фт.",classes:["C","D","P","R","S"]},
+{name:"Вызов удара",level:3,school:"Ev",cast:"1 действие",range:"На себя",comp:"В",conc:true,ritual:false,dur:"Концентрация, до 1 мин",desc:"Следующая атака оружием: +3d8 молнии, цель не использует реакции.",classes:["P"]},
+// ══ 4 УРОВЕНЬ ══
+{name:"Страж веры",level:4,school:"Co",cast:"1 действие",range:"30 фт",comp:"В",conc:false,ritual:false,dur:"8 часов",desc:"Призрачный страж. Враги в пределах 10 фт получают 20 урона лучистой энергией.",classes:["C"]},
+{name:"Огненный щит",level:4,school:"Ev",cast:"1 действие",range:"На себя",comp:"В,С,М",conc:false,ritual:false,dur:"10 минут",desc:"Тёплый (2d8 огня при атаке, сопротивление холоду) или холодный (2d8 холода, сопротивление огню) щит.",classes:["W","S"]},
+{name:"Изгнание",level:4,school:"Ab",cast:"1 действие",range:"60 фт",comp:"В,С,М",conc:true,ritual:false,dur:"Концентрация, до 1 мин",desc:"Испытание Харизмы или существо изгнано. Нативный план — временно. Чужой — навсегда.",classes:["C","P","W","N","S"]},
+{name:"Ледяной шторм",level:4,school:"Ev",cast:"1 действие",range:"300 фт",comp:"В,С,М",conc:false,ritual:false,dur:"1 раунд",desc:"Цилиндр 20×40 фт. 2d8 дробящего и 4d6 холодного. Испытание Ловкости на половину.",classes:["D","W","S","N"]},
+{name:"Огненная стена",level:4,school:"Ev",cast:"1 действие",range:"120 фт",comp:"В,С,М",conc:true,ritual:false,dur:"Концентрация, до 1 мин",desc:"Стена огня до 60 фт. Пройти — 5d8 огня. Испытание Ловкости на половину.",classes:["D","W","S"]},
+{name:"Полиморф",level:4,school:"Tr",cast:"1 действие",range:"60 фт",comp:"В,С,М",conc:true,ritual:false,dur:"Концентрация, до 1 часа",desc:"Превращаете существо в зверя. Испытание Мудрости при провале.",classes:["B","D","W","S"]},
+{name:"Нистулово волшебное жилище",level:4,school:"Co",cast:"1 минута",range:"300 фт",comp:"В,С,М",conc:false,ritual:true,dur:"24 часа",desc:"Невидимый дверной проём в межпространственное жилище до 8 существ.",classes:["W","B"]},
+{name:"Воздушная стена",level:4,school:"Ev",cast:"1 действие",range:"120 фт",comp:"В,С,М",conc:true,ritual:false,dur:"Концентрация, до 1 мин",desc:"Стена ветра 60×15 фт. Мелкие летящие существа не проходят. Снаряды с помехой.",classes:["D","W","S"]},
+// ══ 5 УРОВЕНЬ ══
+{name:"Телекинез",level:5,school:"Tr",cast:"1 действие",range:"60 фт",comp:"В,С",conc:true,ritual:false,dur:"Концентрация, до 10 мин",desc:"Перемещаете предметы и существ силой мысли.",classes:["W","S","N"]},
+{name:"Конус холода",level:5,school:"Ev",cast:"1 действие",range:"На себя (60-фт конус)",comp:"В,С,М",conc:false,ritual:false,dur:"Мгновенно",desc:"8d8 холодного. Испытание Телосложения на половину. Убитые — ледяные статуи.",classes:["W","S","N"]},
+{name:"Воскрешение",level:5,school:"Ne",cast:"1 час",range:"Касание",comp:"В,С,М",conc:false,ritual:false,dur:"Мгновенно",desc:"Возвращаете умершего не более 100 лет назад.",classes:["B","C","P","D"]},
+{name:"Облако смерти",level:5,school:"Ne",cast:"1 действие",range:"150 фт",comp:"В,С",conc:true,ritual:false,dur:"Концентрация, до 10 мин",desc:"Сфера 20 фт. 5d8 яда. Испытание Телосложения на половину. Повторяется каждый ход.",classes:["D","W","N","S"]},
+{name:"Телепатическая связь Рары",level:5,school:"Di",cast:"1 действие",range:"30 фт",comp:"В,С,М",conc:false,ritual:true,dur:"1 час",desc:"Телепатическая связь до 8 существ.",classes:["W"]},
+{name:"Масса лечения",level:5,school:"Ev",cast:"1 действие",range:"60 фт",comp:"В,С",conc:false,ritual:false,dur:"Мгновенно",desc:"До шести существ в пределах 30 фт восстанавливают 3d8 + мод хитов.",classes:["B","C","D"]},
+// ══ 6–9 УРОВЕНЬ ══
+{name:"Слово возврата",level:6,school:"Co",cast:"1 действие",range:"На себя",comp:"В,М",conc:false,ritual:false,dur:"Мгновенно",desc:"Вы и до 5 существ телепортируетесь в заранее освящённое место.",classes:["C","D"]},
+{name:"Огненный смерч",level:7,school:"Co",cast:"1 действие",range:"300 фт",comp:"В,С,М",conc:true,ritual:false,dur:"Концентрация, до 1 мин",desc:"Цилиндр 10×60 фт. 10d6 огня. Испытание Ловкости на половину.",classes:["D","S"]},
+{name:"Смерть пальцем",level:7,school:"Ne",cast:"1 действие",range:"60 фт",comp:"В,С",conc:false,ritual:false,dur:"Мгновенно",desc:"7d8+30 некротического. Испытание Телосложения на половину. Убитый гуманоид встаёт зомби.",classes:["W","N","S"]},
+{name:"Телепортация",level:7,school:"Co",cast:"1 действие",range:"10 фт",comp:"В",conc:false,ritual:false,dur:"Мгновенно",desc:"Вы и до 8 существ телепортируетесь к месту назначения.",classes:["B","W","S"]},
+{name:"Настоящее перевоплощение",level:7,school:"Tr",cast:"10 минут",range:"Касание",comp:"В,С,М",conc:false,ritual:false,dur:"10 дней",desc:"Умершее существо воссоздаётся в случайном гуманоидном теле.",classes:["D"]},
+{name:"Слово силы: оглушить",level:8,school:"En",cast:"1 действие",range:"60 фт",comp:"В",conc:false,ritual:false,dur:"Мгновенно",desc:"Если у цели ≤150 хитов — она оглушена.",classes:["B","W","S","N"]},
+{name:"Солнечный свет",level:8,school:"Ev",cast:"1 действие",range:"150 фт",comp:"В,С,М",conc:true,ritual:false,dur:"Концентрация, до 1 мин",desc:"Цилиндр 60×80 фт яркого света. 12d6 лучистого. Нежить с помехой.",classes:["C","D"]},
+{name:"Желание",level:9,school:"Co",cast:"1 действие",range:"На себя",comp:"В",conc:false,ritual:false,dur:"Мгновенно",desc:"Наиболее мощное заклинание. Дублирует любое заклинание ≤8 уровня или переписывает реальность.",classes:["W","S"]},
+{name:"Истинное воскрешение",level:9,school:"Ne",cast:"1 час",range:"Касание",comp:"В,С,М",conc:false,ritual:false,dur:"Мгновенно",desc:"Восстанавливает умершего ≤200 лет назад из любого состояния.",classes:["C","D"]},
+{name:"Гейт",level:9,school:"Co",cast:"1 действие",range:"60 фт",comp:"В,С,М",conc:true,ritual:false,dur:"Концентрация, до 1 мин",desc:"Создаёт портал в другой план. Называете существо — оно притягивается.",classes:["C","W","S"]},
+{name:"Временная остановка",level:9,school:"Tr",cast:"1 действие",range:"На себя",comp:"В",conc:false,ritual:false,dur:"1d4+1 хода",desc:"Останавливаете время для всех, кроме себя.",classes:["W","S"]},
+{name:"Предсказание",level:9,school:"Di",cast:"1 минута",range:"На себя",comp:"В,С,М",conc:false,ritual:true,dur:"Мгновенно",desc:"Преимущество к броскам атаки, проверкам и испытаниям на 8 часов.",classes:["C"]},
+];
+
+// ════════════════════════════════════════════════════════════
+// PHB ТАБЛИЦЫ
+// ════════════════════════════════════════════════════════════
+// Индекс = уровень − 1 (массив 20 элементов)
+const TBL_CANTRIPS = {
+  B:[2,2,2,3,3,3,3,3,3,4,4,4,4,4,4,4,4,4,4,4],
+  C:[3,3,3,4,4,4,4,4,4,5,5,5,5,5,5,5,5,5,5,5],
+  D:[2,2,2,3,3,3,3,3,3,4,4,4,4,4,4,4,4,4,4,4],
+  P:null, R:null,
+  K:[3,3,3,3,3,3,3,3,3,4,4,4,4,4,4,4,4,4,4,4],
+  W:[3,3,3,4,4,4,4,4,4,5,5,5,5,5,5,5,5,5,5,5],
+  N:[2,2,2,3,3,3,3,3,3,4,4,4,4,4,4,4,4,4,4,4],
+  S:[4,4,4,5,5,5,5,5,5,6,6,6,6,6,6,6,6,6,6,6],
+};
+// Известные заклинания (для классов с «известными»)
+const TBL_KNOWN = {
+  B:[4,5,6,7,8,9,10,11,12,13,14,15,16,18,19,19,20,22,22,22],
+  C:null, D:null, P:null,
+  R:[2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,16,17,18,19,20],
+  K:[3,3,4,4,4,4,5,5,5,6,6,6,7,7,7,7,8,8,8,8],
+  W:null,
+  N:[2,3,4,5,6,7,8,9,10,10,11,11,12,12,13,13,14,14,15,15],
+  S:[2,3,4,5,6,7,8,9,10,11,12,12,13,13,14,14,15,15,15,15],
+};
+// Плут получает магию только через архетип «Изворотливость» с 3-го уровня
+const ROGUE_MAGIC_MIN_LEVEL = 3;
+
+// Механика по умолчанию для каждого класса
+const DEFAULT_MECH = {
+  B:"known", C:"prepared", D:"prepared", P:"prepared",
+  R:"known",  K:"known",   W:"spellbook", N:"known", S:"known",
+};
+
+// ════════════════════════════════════════════════════════════
+// СОСТОЯНИЕ
+// ════════════════════════════════════════════════════════════
+const CLASSES = [
+  {id:"B",label:"Бард"},   {id:"C",label:"Жрец"},
+  {id:"D",label:"Друид"},  {id:"P",label:"Паладин"},
+  {id:"R",label:"Следопыт"},{id:"K",label:"Плут"},
+  {id:"W",label:"Волшебник"},{id:"N",label:"Колдун"},
+  {id:"S",label:"Чародей"},
+];
+const SCHOOL_NAMES={Ab:"Ограждение",Co:"Вызов",Di:"Прорицание",En:"Очарование",Ev:"Воплощение",Il:"Иллюзия",Ne:"Некромантия",Tr:"Преобразование"};
+
+let selClass="W", selMech="spellbook";
+let userOverrideMech=false, userOverrideLimits={known:false, cantrip:false};
+
+let cfg={cls:"W",level:1,mod:3,mech:"spellbook",knownLimit:0,cantripLimit:0};
+
+// sets: name → "known"|"book"|"prepared"|"always"
+let spellSets={};
+let scrollBonus=0; // дополнительные заклинания в книге из свитков
+
+let filterLevel="all", filterSchool="", filterComp="", searchQ="";
+
+// ════════════════════════════════════════════════════════════
+// ВЫЧИСЛЕНИЯ
+// ════════════════════════════════════════════════════════════
+function getLv(){ return cfg.level; }
+function getMod(){ return cfg.mod; }
+
+function getMaxSpellLevel(){
+  const lv=getLv(), cls=cfg.cls;
+  if(["B","C","D","W","S"].includes(cls)){
+    if(lv>=17)return 9;if(lv>=15)return 8;if(lv>=13)return 7;
+    if(lv>=11)return 6;if(lv>=9)return 5;if(lv>=7)return 4;
+    if(lv>=5)return 3;if(lv>=3)return 2;return 1;
+  }
+  if(cls==="N")return Math.min(5,Math.ceil(lv/2));
+  if(["P","R"].includes(cls)){
+    const h=Math.floor(lv/2);
+    if(h>=9)return 5;if(h>=7)return 4;if(h>=5)return 3;if(h>=3)return 2;if(h>=1)return 1;return 0;
+  }
+  if(cls==="K") return lv>=3 ? Math.min(4,Math.floor(lv/3)) : 0;
+  return 0;
+}
+
+function getPreparedMax(){
+  const lv=getLv(),mod=getMod();
+  if(cfg.cls==="W") return Math.max(1,Math.floor(lv/2)+mod);
+  if(cfg.cls==="C") return Math.max(1,lv+mod);
+  if(cfg.cls==="D") return Math.max(1,lv+mod);
+  if(cfg.cls==="P") return Math.max(1,Math.floor(lv/2)+mod);
+  if(cfg.cls==="R") return Math.max(1,Math.floor(lv/2)+mod);
+  return 0;
+}
+
+function getPreparedFormula(){
+  const lv=getLv(),mod=getMod(),v=getPreparedMax();
+  if(cfg.cls==="W") return `уровень/2 (${Math.floor(lv/2)}) + мод Инт (${mod}) = ${v}`;
+  if(cfg.cls==="C") return `уровень (${lv}) + мод Мудр (${mod}) = ${v}`;
+  if(cfg.cls==="D") return `уровень (${lv}) + мод Мудр (${mod}) = ${v}`;
+  if(cfg.cls==="P") return `уровень/2 (${Math.floor(lv/2)}) + мод Харизмы (${mod}) = ${v}`;
+  if(cfg.cls==="R") return `уровень/2 (${Math.floor(lv/2)}) + мод (${mod}) = ${v}`;
+  return "";
+}
+
+function getBookMax(){
+  const lv=getLv();
+  return 6 + (lv-1)*2 + scrollBonus; // 6 на 1-м, +2 за каждый след. уровень + свитки
+}
+
+function getAutoCantrip(cls,lv){ const t=TBL_CANTRIPS[cls]; return t?t[Math.min(lv,20)-1]:null; }
+function getAutoKnown(cls,lv){   const t=TBL_KNOWN[cls];    return t?t[Math.min(lv,20)-1]:null; }
+
+// ════════════════════════════════════════════════════════════
+// ЭКРАН НАСТРОЙКИ
+// ════════════════════════════════════════════════════════════
+function buildSetup(){
+  const cb=document.getElementById("classButtons");
+  CLASSES.forEach(c=>{
+    const b=document.createElement("button");
+    b.className="seg-btn"+(c.id==="W"?" active":"");
+    b.textContent=c.label;
+    b.addEventListener("click",()=>{
+      document.querySelectorAll("#classButtons .seg-btn").forEach(x=>x.classList.remove("active"));
+      b.classList.add("active");
+      selClass=c.id;
+      if(!userOverrideMech){ selMech=DEFAULT_MECH[c.id]; }
+      userOverrideLimits={known:false,cantrip:false};
+      updateSetupUI();
+    });
+    cb.appendChild(b);
+  });
+
+  document.querySelectorAll("#mechButtons .seg-btn").forEach(b=>{
+    b.addEventListener("click",()=>{
+      document.querySelectorAll("#mechButtons .seg-btn").forEach(x=>x.classList.remove("active"));
+      b.classList.add("active");
+      selMech=b.dataset.mech;
+      userOverrideMech=true;
+      userOverrideLimits={known:false,cantrip:false};
+      updateSetupUI();
+    });
+  });
+
+  document.getElementById("knownLimit").addEventListener("input",()=>{userOverrideLimits.known=true;});
+  document.getElementById("cantripLimit").addEventListener("input",()=>{userOverrideLimits.cantrip=true;});
+  document.getElementById("charLevel").addEventListener("input",()=>{
+    userOverrideLimits={known:false,cantrip:false};
+    updateSetupUI();
+  });
+  document.getElementById("spellMod").addEventListener("input",updateSetupUI);
+
+  updateSetupUI();
+}
+
+function updateSetupUI(){
+  const lv=parseInt(document.getElementById("charLevel").value)||1;
+  const mod=parseInt(document.getElementById("spellMod").value)||0;
+  const cls=selClass;
+  const mech=selMech;
+
+  // Подсветить активную механику
+  document.querySelectorAll("#mechButtons .seg-btn").forEach(b=>{
+    b.classList.toggle("active",b.dataset.mech===mech);
+  });
+
+  // Метка «автоматически»
+  const autoLabel=document.getElementById("mechAutoLabel");
+  const defaultM=DEFAULT_MECH[cls];
+  if(!userOverrideMech){
+    const names={known:"Известные",prepared:"Готовимые",spellbook:"Книга заклинаний"};
+    autoLabel.innerHTML=`Автоматически для <span>${CLASSES.find(c=>c.id===cls).label}а</span>`;
+  } else {
+    autoLabel.textContent="Переопределено вручную";
+  }
+
+  // Подсказка по готовимым
+  let hint="";
+  if(mech==="prepared"||mech==="spellbook"){
+    const v=Math.max(1,mech==="spellbook"?Math.floor(lv/2)+mod:
+      (cls==="C"||cls==="D"?lv+mod:Math.floor(lv/2)+mod));
+    const formula=mech==="spellbook"
+      ? `Волшебник: уровень/2 (${Math.floor(lv/2)}) + мод Инт (${mod}) = <strong>${Math.max(1,Math.floor(lv/2)+mod)}</strong>`
+      : (cls==="C"?`Жрец: уровень (${lv}) + мод (${mod}) = <strong>${Math.max(1,lv+mod)}</strong>`:
+         cls==="D"?`Друид: уровень (${lv}) + мод (${mod}) = <strong>${Math.max(1,lv+mod)}</strong>`:
+         cls==="P"?`Паладин: уровень/2 (${Math.floor(lv/2)}) + мод (${mod}) = <strong>${Math.max(1,Math.floor(lv/2)+mod)}</strong>`:
+         cls==="R"?`Следопыт: уровень/2 (${Math.floor(lv/2)}) + мод (${mod}) = <strong>${Math.max(1,Math.floor(lv/2)+mod)}</strong>`:"");
+    if(formula) hint=`<div class="hint-box">Макс. готовых заклинаний: ${formula}</div>`;
+    if(mech==="spellbook"){
+      const bookMax=6+(lv-1)*2;
+      hint+=`<div class="hint-box">Книга: 6 на 1-м уровне + 2 за каждый следующий = <strong>${bookMax}</strong> заклинаний</div>`;
+    }
+  }
+  document.getElementById("hintBox").innerHTML=hint;
+
+  // Поле «известных»
+  const kField=document.getElementById("knownLimitField");
+  const autoK=getAutoKnown(cls,lv);
+  if(mech==="known" && autoK!==null){
+    kField.style.display="";
+    document.getElementById("knownLimitHint").textContent=`PHB: ${autoK}`;
+    if(!userOverrideLimits.known) document.getElementById("knownLimit").value=autoK;
+  } else if(mech==="known"){
+    kField.style.display="";
+    document.getElementById("knownLimitHint").textContent="нет таблицы PHB";
+  } else {
+    kField.style.display="none";
+  }
+
+  // Заговоры
+  const autoC=getAutoCantrip(cls,lv);
+  document.getElementById("cantripLimitHint").textContent=
+    autoC!==null?`PHB: ${autoC}`:cls==="P"||cls==="R"?"нет заговоров":"";
+  if(!userOverrideLimits.cantrip) document.getElementById("cantripLimit").value=autoC||0;
+
+  // Плут: предупреждение до 3-го уровня
+  const warnEl=document.getElementById("rogueWarn");
+  if(cls==="K"&&lv<ROGUE_MAGIC_MIN_LEVEL){
+    if(!warnEl){
+      const d=document.createElement("div");
+      d.id="rogueWarn";d.className="hint-box";
+      d.style.cssText="border-color:var(--warn);color:var(--warn)";
+      d.textContent="⚠ Плут получает доступ к магии только с 3-го уровня (архетип «Изворотливость»).";
+      document.getElementById("hintBox").after(d);
+    }
+  } else { const w=document.getElementById("rogueWarn"); if(w)w.remove(); }
+}
+
+// ════════════════════════════════════════════════════════════
+// СТАРТ
+// ════════════════════════════════════════════════════════════
+function startApp(){
+  cfg.cls=selClass;
+  cfg.level=parseInt(document.getElementById("charLevel").value)||1;
+  cfg.mod=parseInt(document.getElementById("spellMod").value)||0;
+  cfg.mech=selMech;
+  cfg.knownLimit=parseInt(document.getElementById("knownLimit").value)||0;
+  cfg.cantripLimit=parseInt(document.getElementById("cantripLimit").value)||0;
+  spellSets={}; scrollBonus=0;
+  document.getElementById("setupScreen").style.display="none";
+  document.getElementById("appScreen").classList.add("visible");
+  buildLevelTabs(); renderCharBar(); renderSpells(); renderSelection();
+}
+
+function resetApp(){
+  document.getElementById("setupScreen").style.display="";
+  document.getElementById("appScreen").classList.remove("visible");
+  userOverrideMech=false;
+  selMech=DEFAULT_MECH[cfg.cls]||"known";
+  updateSetupUI();
+}
+
+// ════════════════════════════════════════════════════════════
+// CHAR BAR
+// ════════════════════════════════════════════════════════════
+function renderCharBar(){
+  const cls=CLASSES.find(c=>c.id===cfg.cls);
+  const entries=Object.entries(spellSets);
+  const cCount=entries.filter(([n,s])=>{ const sp=SPELLS.find(x=>x.name===n); return sp&&sp.level===0&&s!=="always"; }).length;
+  const kCount=entries.filter(([n,s])=>{ const sp=SPELLS.find(x=>x.name===n); return sp&&sp.level>0&&s==="known"; }).length;
+  const bookCount=entries.filter(([,s])=>s==="book"||s==="prepared").length;
+  const prepCount=entries.filter(([,s])=>s==="prepared").length;
+  const alwaysCount=entries.filter(([,s])=>s==="always").length;
+
+  const cl=cfg.cantripLimit;
+  const cOver=cl>0&&cCount>cl;
+  let badges=`<span class="badge ${cOver?"badge-over":"badge-cantrip"}">заговоров: ${cl>0?cCount+"/"+cl:cCount}</span>`;
+
+  if(cfg.mech==="spellbook"){
+    const bMax=getBookMax();
+    const pMax=getPreparedMax();
+    const bOver=bookCount>bMax, pOver=prepCount>pMax;
+    badges+=`<span class="badge ${bOver?"badge-over":"badge-book"}">📖 в книге: ${bookCount}/${bMax}</span>`;
+    badges+=`<span class="badge ${pOver?"badge-over":"badge-known"}">⚡ готово: ${prepCount}/${pMax}</span>`;
+  } else if(cfg.mech==="prepared"){
+    const pMax=getPreparedMax();
+    const pOver=kCount>pMax;
+    badges+=`<span class="badge ${pOver?"badge-over":"badge-known"}">готовых: ${kCount}/${pMax}</span>`;
+  } else {
+    const lim=cfg.knownLimit;
+    const kOver=lim>0&&kCount>lim;
+    badges+=`<span class="badge ${kOver?"badge-over":"badge-known"}">известных: ${lim>0?kCount+"/"+lim:kCount}</span>`;
+  }
+  if(alwaysCount>0) badges+=`<span class="badge badge-always">всегда: ${alwaysCount}</span>`;
+
+  document.getElementById("charBar").innerHTML=`
+    <div class="char-info"><strong>${cls.label}</strong> · ${cfg.level} ур. · мод. +${cfg.mod} · макс. уровень: ${getMaxSpellLevel()}</div>
+    <div class="char-badges">${badges}</div>
+    <button class="btn-reset" id="resetBtn">← Изменить</button>`;
+  document.getElementById("resetBtn").addEventListener("click",resetApp);
+}
+
+// ════════════════════════════════════════════════════════════
+// LEVEL TABS
+// ════════════════════════════════════════════════════════════
+function buildLevelTabs(){
+  const el=document.getElementById("levelTabs"); el.innerHTML="";
+  ["all",0,1,2,3,4,5,6,7,8,9].forEach(lv=>{
+    const labels={all:"Все",0:"Заговор",1:"I",2:"II",3:"III",4:"IV",5:"V",6:"VI",7:"VII",8:"VIII",9:"IX"};
+    const t=document.createElement("div");
+    t.className="level-tab"+(filterLevel===lv?" active":"");
+    t.textContent=labels[lv];
+    t.addEventListener("click",()=>{ filterLevel=lv; rerenderTabs(); renderSpells(); });
+    el.appendChild(t);
+  });
+}
+function rerenderTabs(){
+  const tabs=document.querySelectorAll(".level-tab");
+  ["all",0,1,2,3,4,5,6,7,8,9].forEach((lv,i)=>tabs[i]&&tabs[i].classList.toggle("active",filterLevel===lv));
+}
+
+// ════════════════════════════════════════════════════════════
+// SPELL LIST
+// ════════════════════════════════════════════════════════════
+function getFiltered(){
+  const maxLv=getMaxSpellLevel();
+  // Плут до 3-го уровня не видит заклинаний
+  if(cfg.cls==="K"&&cfg.level<ROGUE_MAGIC_MIN_LEVEL) return [];
+  return SPELLS.filter(s=>{
+    if(!s.classes.includes(cfg.cls)) return false;
+    if(s.level>maxLv) return false;
+    if(filterLevel!=="all"&&s.level!==filterLevel) return false;
+    if(filterSchool&&s.school!==filterSchool) return false;
+    if(filterComp){
+      if(filterComp==="noM"&&s.comp.includes("М")) return false;
+      if(filterComp==="conc"&&!s.conc) return false;
+      if(filterComp==="ritual"&&!s.ritual) return false;
+      if(filterComp==="М"&&!s.comp.includes("М")) return false;
+    }
+    if(searchQ&&!s.name.toLowerCase().includes(searchQ)) return false;
+    return true;
+  }).sort((a,b)=>a.level-b.level||a.name.localeCompare(b.name,"ru"));
+}
+
+function renderSpells(){
+  const spells=getFiltered();
+  const el=document.getElementById("spellList"); el.innerHTML="";
+  if(!spells.length){
+    const d=document.createElement("div"); d.className="no-results";
+    d.textContent=cfg.cls==="K"&&cfg.level<ROGUE_MAGIC_MIN_LEVEL
+      ?"Плут получает магию с 3-го уровня (архетип «Изворотливость»)"
+      :"Заклинаний не найдено";
+    el.appendChild(d); return;
+  }
+  spells.forEach(sp=>{
+    const st=spellSets[sp.name]||null;
+    const stClass=st?"st-"+st:"";
+    const row=document.createElement("div");
+    row.className="spell-row "+stClass;
+
+    const dot=document.createElement("div"); dot.className="spell-dot";
+    const main=document.createElement("div"); main.className="spell-main";
+    const nm=document.createElement("div"); nm.className="spell-name"; nm.textContent=sp.name;
+    const tags=document.createElement("div"); tags.className="spell-tags";
+    const parts=[sp.cast,sp.range];
+    if(sp.conc)parts.push("Конц.");
+    if(sp.ritual)parts.push("Ритуал");
+    tags.textContent=parts.join(" · ");
+    main.append(nm,tags);
+
+    const lvl=document.createElement("div"); lvl.className="spell-lvl";
+    lvl.textContent=sp.level===0?"⋄":sp.level;
+
+    const sch=document.createElement("div");
+    sch.className="spell-school school-"+sp.school;
+    sch.textContent=SCHOOL_NAMES[sp.school]||sp.school;
+
+    const acts=document.createElement("div"); acts.className="spell-actions";
+
+    if(cfg.mech==="spellbook"){
+      if(sp.level>0){
+        // Кнопка «В книгу»
+        const b1=document.createElement("button");
+        b1.className="sp-btn"+(st==="book"||st==="prepared"?" on-book":"");
+        b1.textContent=st==="book"||st==="prepared"?"📖 В книге":"+ В книгу";
+        b1.addEventListener("click",e=>{e.stopPropagation();toggleBook(sp.name);});
+        // Кнопка «Подготовить» (только если в книге)
+        const b2=document.createElement("button");
+        b2.className="sp-btn"+(st==="prepared"?" on-prepared":"");
+        b2.textContent=st==="prepared"?"⚡ Готово":"⚡ Подготовить";
+        b2.disabled=!(st==="book"||st==="prepared");
+        if(b2.disabled) b2.style.opacity=".35";
+        b2.addEventListener("click",e=>{e.stopPropagation();togglePrepared(sp.name);});
+        acts.append(b1,b2);
+      } else {
+        // Заговоры — просто «известные»
+        const b=document.createElement("button");
+        b.className="sp-btn"+(st==="known"?" on-known":"");
+        b.textContent=st==="known"?"✓ Известен":"+ Заговор";
+        b.addEventListener("click",e=>{e.stopPropagation();toggleKnown(sp.name);});
+        acts.append(b);
+      }
+    } else {
+      const b=document.createElement("button");
+      b.className="sp-btn"+(st==="known"?" on-known":"");
+      b.textContent=cfg.mech==="prepared"
+        ?(st==="known"?"✓ Готов":"+ Готовить")
+        :(st==="known"?"✓ Известно":"+ Известное");
+      b.addEventListener("click",e=>{e.stopPropagation();toggleKnown(sp.name);});
+      acts.append(b);
+    }
+
+    // Кнопка «Всегда подготовлено»
+    const ba=document.createElement("button");
+    ba.className="sp-btn"+(st==="always"?" on-always":"");
+    ba.textContent=st==="always"?"★ Всегда":"★";
+    ba.title="Всегда подготовлено";
+    ba.addEventListener("click",e=>{e.stopPropagation();toggleAlways(sp.name);});
+    acts.append(ba);
+
+    row.append(dot,main,lvl,sch,acts);
+    row.addEventListener("click",()=>openDetail(sp));
+    el.appendChild(row);
+  });
+}
+
+// ════════════════════════════════════════════════════════════
+// TOGGLE ACTIONS
+// ════════════════════════════════════════════════════════════
+function toggleKnown(name){
+  if(spellSets[name]==="known") delete spellSets[name];
+  else spellSets[name]="known";
+  refresh();
+}
+function toggleBook(name){
+  const cur=spellSets[name];
+  if(cur==="book"||cur==="prepared") delete spellSets[name];
+  else spellSets[name]="book";
+  refresh();
+}
+function togglePrepared(name){
+  const cur=spellSets[name];
+  if(cur==="prepared") spellSets[name]="book";
+  else if(cur==="book") spellSets[name]="prepared";
+  refresh();
+}
+function toggleAlways(name){
+  if(spellSets[name]==="always") delete spellSets[name];
+  else spellSets[name]="always";
+  refresh();
+}
+function refresh(){ renderCharBar(); renderSpells(); renderSelection(); }
+
+// ════════════════════════════════════════════════════════════
+// DETAIL POPUP
+// ════════════════════════════════════════════════════════════
+function openDetail(sp){
+  const st=spellSets[sp.name]||null;
+  const lvlLabel=sp.level===0?"Заговор":`${sp.level} уровень`;
+  const esc=sp.name.replace(/\\/g,"\\\\").replace(/'/g,"\\'");
+
+  let actBtns="";
+  if(cfg.mech==="spellbook"&&sp.level>0){
+    const inBook=st==="book"||st==="prepared";
+    const prep=st==="prepared";
+    actBtns=`
+      <button class="sd-btn ${inBook?"on-book":""}" onclick="toggleBook('${esc}');refreshDetail('${esc}')">
+        ${inBook?"📖 В книге":"+ В книгу"}
+      </button>
+      <button class="sd-btn ${prep?"on-prepared":""}" ${inBook?"":"disabled style='opacity:.35'"} onclick="togglePrepared('${esc}');refreshDetail('${esc}')">
+        ${prep?"⚡ Готово":"⚡ Подготовить"}
+      </button>`;
+  } else {
+    const isK=st==="known";
+    const kLabel=cfg.mech==="prepared"?(isK?"✓ Готово":"+ Готовить"):(isK?"✓ Известно":"+ Известное");
+    actBtns=`<button class="sd-btn ${isK?"on-known":""}" onclick="toggleKnown('${esc}');refreshDetail('${esc}')">${kLabel}</button>`;
+  }
+  const isA=st==="always";
+  actBtns+=`<button class="sd-btn ${isA?"on-always":""}" onclick="toggleAlways('${esc}');refreshDetail('${esc}')">${isA?"★ Всегда подготовлено":"★ Всегда подготовлено"}</button>`;
+
+  document.getElementById("sdCard").innerHTML=`
+    <div class="sd-header">
+      <div class="sd-name">${sp.name}</div>
+      <button class="sd-close" onclick="closeDetail()">×</button>
+    </div>
+    <div class="sd-badges">
+      <span class="sd-badge school-${sp.school}">${lvlLabel} · ${SCHOOL_NAMES[sp.school]||sp.school}</span>
+      ${sp.conc?'<span class="sd-badge sd-badge-conc">Концентрация</span>':""}
+      ${sp.ritual?'<span class="sd-badge sd-badge-ritual">Ритуал</span>':""}
+    </div>
+    <div class="sd-grid">
+      <div><div class="sd-field-label">Время сотворения</div><div class="sd-field-val">${sp.cast}</div></div>
+      <div><div class="sd-field-label">Дальность</div><div class="sd-field-val">${sp.range}</div></div>
+      <div><div class="sd-field-label">Компоненты</div><div class="sd-field-val">${sp.comp}</div></div>
+      <div><div class="sd-field-label">Длительность</div><div class="sd-field-val">${sp.dur}</div></div>
+    </div>
+    <div class="sd-desc">${sp.desc}</div>
+    <div class="sd-actions">${actBtns}</div>`;
+  document.getElementById("spellDetail").classList.add("open");
+}
+function refreshDetail(name){
+  const sp=SPELLS.find(s=>s.name===name);
+  if(sp) openDetail(sp);
+  refresh();
+}
+function closeDetail(){ document.getElementById("spellDetail").classList.remove("open"); }
+
+// ════════════════════════════════════════════════════════════
+// SELECTION PANEL
+// ════════════════════════════════════════════════════════════
+function renderSelection(){
+  const entries=Object.entries(spellSets);
+  const limitSec=document.getElementById("limitSection");
+  const selSec=document.getElementById("selSections");
+
+  // Разбивка по типу
+  const byType={};
+  entries.forEach(([n,s])=>{ if(!byType[s])byType[s]=[]; byType[s].push(n); });
+
+  // Заговоры (level=0, not always)
+  const cantripNames=entries.filter(([n,s])=>{
+    const sp=SPELLS.find(x=>x.name===n); return sp&&sp.level===0&&s!=="always";
+  }).map(([n])=>n);
+
+  // Лимит-блоки
+  let limHTML="";
+
+  // Заговоры
+  const cl=cfg.cantripLimit;
+  if(cl>0){
+    const pct=Math.min(100,(cantripNames.length/cl)*100);
+    const over=cantripNames.length>cl;
+    limHTML+=`<div class="limit-block">
+      <div class="limit-label"><span>Заговоры</span></div>
+      <div class="limit-bar-wrap"><div class="limit-bar" style="width:${pct}%;background:${over?"var(--danger)":pct>80?"var(--warn)":"var(--bonus)"}"></div></div>
+      <div class="limit-row"><span class="${over?"limit-over":"limit-used"}">${over?"⚠ ":""}${cantripNames.length} заговоров</span><span class="limit-max">макс. ${cl}</span></div>
+    </div>`;
+  }
+
+  // Заклинания
+  if(cfg.mech==="spellbook"){
+    const bookCount=(byType["book"]||[]).length+(byType["prepared"]||[]).length;
+    const prepCount=(byType["prepared"]||[]).length;
+    const bMax=getBookMax(), pMax=getPreparedMax();
+    const bPct=Math.min(100,(bookCount/bMax)*100), pPct=Math.min(100,(prepCount/pMax)*100);
+    const bOver=bookCount>bMax, pOver=prepCount>pMax;
+    limHTML+=`<div class="limit-block">
+      <div class="limit-label"><span>📖 Книга заклинаний</span></div>
+      <div class="limit-bar-wrap"><div class="limit-bar" style="width:${bPct}%;background:${bOver?"var(--danger)":bPct>80?"var(--warn)":"var(--book)"}"></div></div>
+      <div class="limit-row"><span class="${bOver?"limit-over":"limit-used"}">${bOver?"⚠ ":""}${bookCount}</span><span class="limit-max">макс. ${bMax}</span></div>
+      <div class="scrolls-row">
+        <span>из свитков: <strong style="color:var(--book2)">${scrollBonus}</strong></span>
+        <button class="scroll-btn" onclick="addScroll(-1)">−</button>
+        <span class="scroll-count">${scrollBonus}</span>
+        <button class="scroll-btn" onclick="addScroll(1)">+</button>
+      </div>
+    </div>
+    <div class="limit-block">
+      <div class="limit-label"><span>⚡ Подготовлено</span><span>${getPreparedFormula()}</span></div>
+      <div class="limit-bar-wrap"><div class="limit-bar" style="width:${pPct}%;background:${pOver?"var(--danger)":pPct>80?"var(--warn)":"var(--ok)"}"></div></div>
+      <div class="limit-row"><span class="${pOver?"limit-over":"limit-used"}">${pOver?"⚠ ":""}${prepCount} подготовлено</span><span class="limit-max">макс. ${pMax}</span></div>
+    </div>`;
+  } else if(cfg.mech==="prepared"){
+    const pMax=getPreparedMax();
+    const kNames=(byType["known"]||[]);
+    const kCount=kNames.filter(n=>{const sp=SPELLS.find(x=>x.name===n);return sp&&sp.level>0;}).length;
+    const pPct=Math.min(100,(kCount/pMax)*100), pOver=kCount>pMax;
+    limHTML+=`<div class="limit-block">
+      <div class="limit-label"><span>Готовых заклинаний</span></div>
+      <div class="limit-formula" style="font-size:11px;color:var(--text2);margin-bottom:4px">${getPreparedFormula()}</div>
+      <div class="limit-bar-wrap"><div class="limit-bar" style="width:${pPct}%;background:${pOver?"var(--danger)":pPct>80?"var(--warn)":"var(--ok)"}"></div></div>
+      <div class="limit-row"><span class="${pOver?"limit-over":"limit-used"}">${pOver?"⚠ ":""}${kCount}</span><span class="limit-max">макс. ${pMax}</span></div>
+    </div>`;
+  } else {
+    const lim=cfg.knownLimit;
+    const kNames=(byType["known"]||[]).filter(n=>{const sp=SPELLS.find(x=>x.name===n);return sp&&sp.level>0;});
+    if(lim>0){
+      const pct=Math.min(100,(kNames.length/lim)*100), over=kNames.length>lim;
+      limHTML+=`<div class="limit-block">
+        <div class="limit-bar-wrap"><div class="limit-bar" style="width:${pct}%;background:${over?"var(--danger)":pct>80?"var(--warn)":"var(--ok)"}"></div></div>
+        <div class="limit-row"><span class="${over?"limit-over":"limit-used"}">${over?"⚠ ":""}${kNames.length} известных</span><span class="limit-max">макс. ${lim}</span></div>
+      </div>`;
+    }
+  }
+  limitSec.innerHTML=limHTML;
+
+  // Секции списка
+  selSec.innerHTML="";
+
+  const sections=cfg.mech==="spellbook"
+    ?[{key:"cantrip",label:"Заговоры",dot:"dot-known",names:cantripNames},
+      {key:"book",   label:"В книге (не подготовлено)",dot:"dot-book",names:byType["book"]||[]},
+      {key:"prepared",label:"Подготовлено",dot:"dot-prepared",names:byType["prepared"]||[]},
+      {key:"always", label:"Всегда подготовлено",dot:"dot-always",names:byType["always"]||[]}]
+    :[{key:"cantrip",label:"Заговоры",dot:"dot-known",names:cantripNames},
+      {key:"known",  label:cfg.mech==="prepared"?"Готовятся":"Известные",dot:"dot-known",names:(byType["known"]||[]).filter(n=>{const sp=SPELLS.find(x=>x.name===n);return sp&&sp.level>0;})},
+      {key:"always", label:"Всегда подготовлено",dot:"dot-always",names:byType["always"]||[]}];
+
+  sections.forEach(sec=>{
+    const wrap=document.createElement("div"); wrap.className="sel-section";
+    const hdr=document.createElement("div"); hdr.className="sel-sec-hdr";
+    hdr.innerHTML=`<span>${sec.label}</span><span>${sec.names.length}</span>`;
+    wrap.appendChild(hdr);
+    const items=document.createElement("div"); items.className="sel-items";
+    if(!sec.names.length){
+      const e=document.createElement("div"); e.className="sel-empty"; e.textContent="Не выбрано"; items.appendChild(e);
+    } else {
+      sec.names.forEach(name=>{
+        const sp=SPELLS.find(s=>s.name===name);
+        items.appendChild(makeSelItem(name,sp,sec.key,sec.dot));
+      });
+    }
+    wrap.appendChild(items);
+    selSec.appendChild(wrap);
+    if(sec.key!=="always"){
+      const div=document.createElement("div"); div.className="divider"; selSec.appendChild(div);
+    }
+  });
+}
+
+function addScroll(delta){
+  scrollBonus=Math.max(0,scrollBonus+delta);
+  renderCharBar(); renderSelection();
+}
+
+function makeSelItem(name,sp,key,dotClass){
+  const row=document.createElement("div"); row.className="sel-item";
+  const dot=document.createElement("div"); dot.className="sel-dot "+dotClass;
+  const nm=document.createElement("div"); nm.className="sel-item-name"; nm.textContent=name;
+  const lvl=document.createElement("div"); lvl.className="sel-item-lvl";
+  lvl.textContent=sp?(sp.level===0?"⋄":sp.level+"ур"):"";
+  const rm=document.createElement("span"); rm.className="sel-item-rm"; rm.textContent="×";
+  rm.addEventListener("click",e=>{
+    e.stopPropagation();
+    delete spellSets[name];
+    refresh();
+  });
+  row.addEventListener("click",()=>{ if(sp)openDetail(sp); });
+  row.append(dot,nm,lvl,rm); return row;
+}
+
+// ════════════════════════════════════════════════════════════
+// СОБЫТИЯ
+// ════════════════════════════════════════════════════════════
+document.getElementById("searchInput").addEventListener("input",e=>{searchQ=e.target.value.toLowerCase();renderSpells();});
+document.getElementById("schoolFilter").addEventListener("change",e=>{filterSchool=e.target.value;renderSpells();});
+document.getElementById("compFilter").addEventListener("change",e=>{filterComp=e.target.value;renderSpells();});
+document.getElementById("selClearBtn").addEventListener("click",()=>{spellSets={};scrollBonus=0;refresh();});
+
+buildSetup();
+</script>
+</body>
+</html>
