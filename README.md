@@ -2,7 +2,7 @@
 
 A browser-based spell management tool for **Dungeons & Dragons 5th Edition** — helps players pick, track, and organize their spells according to PHB rules, with automatic limit calculation per class and level.
 
-🔗 **[Live demo →](https://alicetheowl.github.io/dnd-spells-calculator/)** *(update link when deployed)*
+🔗 **[Live demo →](https://alicetheowl.github.io/dnd-spells-calculator/)**
 
 ---
 
