@@ -194,7 +194,7 @@ input[type=number]:focus,input[type=text]:focus,select:focus{border-color:var(--
       <label>Механика заклинаний</label>
       <div class="seg" id="mechButtons">
         <button class="seg-btn" data-mech="known">Известные</button>
-        <button class="seg-btn" data-mech="prepared">Готовимые</button>
+        <button class="seg-btn" data-mech="prepared">Подготовка</button>
         <button class="seg-btn" data-mech="spellbook">Книга заклинаний</button>
       </div>
       <div class="mech-auto" id="mechAutoLabel"></div>
@@ -544,7 +544,7 @@ function updateSetupUI(){
   const autoLabel=document.getElementById("mechAutoLabel");
   const defaultM=DEFAULT_MECH[cls];
   if(!userOverrideMech){
-    const names={known:"Известные",prepared:"Готовимые",spellbook:"Книга заклинаний"};
+    const names={known:"Известные",prepared:"Подготовка",spellbook:"Книга заклинаний"};
     autoLabel.innerHTML=`Автоматически для <span>${CLASSES.find(c=>c.id===cls).label}а</span>`;
   } else {
     autoLabel.textContent="Переопределено вручную";
