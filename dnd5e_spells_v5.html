@@ -405,7 +405,7 @@ const TBL_KNOWN = {
   N:[2,3,4,5,6,7,8,9,10,10,11,11,12,12,13,13,14,14,15,15],
   S:[2,3,4,5,6,7,8,9,10,11,12,12,13,13,14,14,15,15,15,15],
 };
-// Плут получает магию только через архетип «Изворотливость» с 3-го уровня
+// Плут получает магию только через архетип «Мистический ловкач» с 3-го уровня
 const ROGUE_MAGIC_MIN_LEVEL = 3;
 
 // Механика по умолчанию для каждого класса
@@ -596,7 +596,7 @@ function updateSetupUI(){
       const d=document.createElement("div");
       d.id="rogueWarn";d.className="hint-box";
       d.style.cssText="border-color:var(--warn);color:var(--warn)";
-      d.textContent="⚠ Плут получает доступ к магии только с 3-го уровня (архетип «Изворотливость»).";
+      d.textContent="⚠ Плут получает доступ к магии только с 3-го уровня (архетип «Мистический ловкач»).";
       document.getElementById("hintBox").after(d);
     }
   } else { const w=document.getElementById("rogueWarn"); if(w)w.remove(); }
@@ -714,7 +714,7 @@ function renderSpells(){
   if(!spells.length){
     const d=document.createElement("div"); d.className="no-results";
     d.textContent=cfg.cls==="K"&&cfg.level<ROGUE_MAGIC_MIN_LEVEL
-      ?"Плут получает магию с 3-го уровня (архетип «Изворотливость»)"
+      ?"Плут получает магию с 3-го уровня (архетип «Мистический ловкач»)"
       :"Заклинаний не найдено";
     el.appendChild(d); return;
   }
